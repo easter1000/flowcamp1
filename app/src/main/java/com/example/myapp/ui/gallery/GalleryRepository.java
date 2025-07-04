@@ -1,6 +1,8 @@
 package com.example.myapp.ui.gallery;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
 
@@ -13,6 +15,7 @@ import com.example.myapp.data.Restaurant;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 public class GalleryRepository {
 
@@ -43,6 +46,12 @@ public class GalleryRepository {
 
     public LiveData<MenuItem> getMenuById(long id) { return menuItemDao.getById(id); }
     public LiveData<Restaurant> getRestaurantById(long id) { return restaurantDao.getById(id); }
+    public void restaurantExists(String name, Consumer<Boolean> callback) {
+        io.execute(() -> {
+            boolean exists = restaurantDao.existByName(name);
+            new Handler(Looper.getMainLooper()).post(() -> callback.accept(exists));
+        });
+    }
 
 
     public interface InsertCallback { void onInserted(long id); }

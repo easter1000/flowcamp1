@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:inputType="text"
             android:padding="8dp"
-            android:privateImeOptions="defaultInputmode=korean" />
+            android:singleLine="true" />
 
         <TextView
             android:layout_width="match_parent"
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:inputType="text"
             android:padding="8dp"
-            android:privateImeOptions="defaultInputmode=korean" />
+            android:singleLine="true" />
 
         <TextView
             android:layout_width="match_parent"
@@ -51,24 +51,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint=""
-            android:inputType="text"
             android:padding="8dp"
-            android:privateImeOptions="defaultInputmode=korean" />
+            android:singleLine="true"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="별점"
             android:textStyle="bold"
-            android:paddingTop="8dp"/>
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"/>
 
         <RatingBar
             android:id="@+id/rating_bar"
-            style="?android:attr/ratingBarStyleSmall"
+            style="@style/Widget.AppCompat.RatingBar.Indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:numStars="5"
             android:rating="5"
-            android:stepSize="0.5" />
+            android:stepSize="0.5"
+            android:isIndicator="false" />
     </LinearLayout>
 </ScrollView>

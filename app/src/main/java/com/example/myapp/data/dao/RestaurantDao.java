@@ -37,10 +37,13 @@ public interface RestaurantDao {
     LiveData<RestaurantWithMenus> getRestaurantWithMenus(long restaurantId);
 
     @Transaction
-    @Query("SELECT * FROM restaurants ORDER BY name")
+    @Query("SELECT * FROM restaurants NATURAL INNER JOIN menu_items ORDER BY name")
     LiveData<List<RestaurantWithMenus>> getAllRestaurantsWithMenus();
 
     @Query("SELECT * FROM restaurants WHERE id = :id")
     LiveData<Restaurant> getById(long id);
+
+    @Query("SELECT COUNT(*) FROM restaurants WHERE name = :name")
+    Boolean existByName(String name);
 
 }

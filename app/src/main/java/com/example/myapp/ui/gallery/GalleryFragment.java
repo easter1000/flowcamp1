@@ -55,7 +55,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         viewModel = new ViewModelProvider(this).get(GalleryViewModel.class);
 
-        Spinner spinnerFilter = view.findViewById(R.id.spinner_filter);
+        Spinner spinner = view.findViewById(R.id.spinner_filter);
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
                 requireContext(),
                 R.array.gallery_filter_options,
@@ -64,7 +64,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         spinnerAdapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item
         );
-        spinnerFilter.setAdapter(spinnerAdapter);
+        spinner.setAdapter(spinnerAdapter);
 
         ImageButton btnAdd = view.findViewById(R.id.btn_add);
         ImageButton btnFilter = view.findViewById(R.id.btn_filter);
@@ -88,11 +88,19 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         });
 
-        spinnerFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
             }
             @Override public void onNothingSelected(AdapterView<?> parent) { }
+        });
+        spinner.post(new Runnable() {
+            @Override
+            public void run() {
+                spinner.setDropDownWidth(spinner.getWidth());
+                spinner.setDropDownHorizontalOffset(0);
+                spinner.setDropDownVerticalOffset(spinner.getHeight()+20);
+            }
         });
 
         recyclerView = view.findViewById(R.id.recycler_gallery);
@@ -139,7 +147,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
     private static class GalleryAdapter
             extends RecyclerView.Adapter<GalleryAdapter.ImageViewHolder> {
 
-        private Context context;
+        private final Context context;
         private List<MenuItem> data;
         private final OnMenuClickListener listener;
 
