@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    android:padding="30dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="메뉴 이름"
+            android:textStyle="bold"
+            android:paddingTop="8dp"/>
+        <EditText
+            android:id="@+id/et_menu_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:padding="8dp"
+            android:privateImeOptions="defaultInputmode=korean" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="가게 이름"
+            android:textStyle="bold"
+            android:paddingTop="8dp"/>
+
+        <EditText
+            android:id="@+id/et_restaurant"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:padding="8dp"
+            android:privateImeOptions="defaultInputmode=korean" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="한줄평"
+            android:textStyle="bold"
+            android:paddingTop="8dp"/>
+
+        <EditText
+            android:id="@+id/review"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint=""
+            android:inputType="text"
+            android:padding="8dp"
+            android:privateImeOptions="defaultInputmode=korean" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="별점"
+            android:textStyle="bold"
+            android:paddingTop="8dp"/>
+
+        <RatingBar
+            android:id="@+id/rating_bar"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:rating="5"
+            android:stepSize="0.5" />
+    </LinearLayout>
+</ScrollView>

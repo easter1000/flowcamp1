@@ -1,35 +1,40 @@
 package com.example.myapp.ui.gallery;
 
-import android.net.Uri;
+import android.app.Application;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
-import java.util.ArrayList;
+import com.example.myapp.data.MenuItem;
+import com.example.myapp.data.Restaurant;
+
 import java.util.List;
 
-public class GalleryViewModel extends ViewModel {
-    private final MutableLiveData<List<Uri>> imageUris = new MutableLiveData<>();
+public class GalleryViewModel extends AndroidViewModel {
 
-    public GalleryViewModel() {
-        imageUris.setValue(new ArrayList<>());
+    private final GalleryRepository repo;
+    private final LiveData<List<MenuItem>> menuItems;
+    private final LiveData<List<Restaurant>> restaurants;
+
+    public GalleryViewModel(@NonNull Application app) {
+        super(app);
+        repo = new GalleryRepository(app);
+        menuItems = repo.getAllMenus();
+        restaurants = repo.getAllRestaurants();
     }
 
-    public LiveData<List<Uri>> getImageUris() {
-        return imageUris;
+    public LiveData<List<MenuItem>> getMenuItems()   { return menuItems; }
+    public LiveData<List<Restaurant>> getRestaurants() { return restaurants; }
+
+    public void addMenu(MenuItem item) { repo.insertMenu(item); }
+
+    public void addRestaurantWithFirstMenu(Restaurant r, MenuItem first) {
+        repo.insertRestaurant(r, id -> {
+            first.restaurantId = id;
+            addMenu(first);
+        });
     }
 
-    public void loadImages() {
-        // imageUris.setValue(loadedUriList);
-    }
-
-    public void addImage(Uri uri) {
-        List<Uri> current = imageUris.getValue();
-        if (current == null) {
-            current = new ArrayList<>();
-        }
-        current.add(uri);
-        imageUris.setValue(current);
-    }
+    public void loadImages() {}
 }
