@@ -1,9 +1,11 @@
 package com.example.myapp.model;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -101,17 +103,41 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
 
             for (int i = 0; i < place.getReviews(); i++) {
                 // 임시로 플레이스홀더 이미지를 사용
-                ImageView imageView = new ImageView(context);
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                FrameLayout frameLayout = new FrameLayout(context);
+                LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
                         300, // 너비
                         300  // 높이
                 );
-                params.setMargins(0, 0, 15, 0); // 오른쪽 마진
-                imageView.setLayoutParams(params);
+                containerParams.setMargins(0, 0, 15, 0); // 오른쪽 마진
+                frameLayout.setLayoutParams(containerParams);
+
+                ImageView imageView = new ImageView(context);
+                FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT
+                );
+                imageView.setLayoutParams(imageParams);
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 imageView.setImageResource(R.drawable.ic_dashboard_black_24dp); // 임시 플레이스홀더
+                frameLayout.addView(imageView);
 
-                imageContainer.addView(imageView);
+                TextView indexTextView = new TextView(context);
+                FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT
+                );
+                textParams.setMargins(16, 16, 0, 0);
+                indexTextView.setPadding(6, 6, 6, 6);
+
+                indexTextView.setLayoutParams(textParams);
+                indexTextView.setText(String.valueOf(i + 1));
+                indexTextView.setTextSize(12);
+                indexTextView.setTextColor(Color.WHITE);
+                indexTextView.setBackgroundColor(Color.argb(128, 0, 0, 0)); // 반투명 검은색 배경
+
+                frameLayout.addView(indexTextView);
+
+                imageContainer.addView(frameLayout);
             }
         }
     }
