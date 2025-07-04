@@ -24,9 +24,18 @@ public class HomeViewModel extends ViewModel {
 
     private void loadPlacesData() {
         List<Place> dummyList = new ArrayList<>();
-        dummyList.add(new Place("식당1", "주소1", "카테고리1"));
-        dummyList.add(new Place("식당2", "주소2", "카테고리2"));
-        dummyList.add(new Place("식당3", "주소3", "카테고리3"));
+        dummyList.add(new Place("식당1", "주소1", "카테고리1", 0));
+        dummyList.add(new Place("식당2", "주소2", "카테고리2", 1));
+        dummyList.add(new Place("식당3", "주소3", "카테고리3", 2));
+        dummyList.add(new Place("식당1", "주소1", "카테고리1", 3));
+        dummyList.add(new Place("식당2", "주소2", "카테고리2", 4));
+        dummyList.add(new Place("식당3", "주소3", "카테고리3", 5));
+        dummyList.add(new Place("식당1", "주소1", "카테고리1", 6));
+        dummyList.add(new Place("식당2", "주소2", "카테고리2", 1));
+        dummyList.add(new Place("식당3", "주소3", "카테고리3", 2));
+        dummyList.add(new Place("식당1", "주소1", "카테고리1", 3));
+        dummyList.add(new Place("식당2", "주소2", "카테고리2", 4));
+        dummyList.add(new Place("식당3", "주소3", "카테고리3", 5));
         placesLiveData.setValue(dummyList);
 
     }

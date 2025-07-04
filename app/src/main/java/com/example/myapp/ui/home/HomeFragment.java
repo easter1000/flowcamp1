@@ -48,7 +48,7 @@ public class HomeFragment extends Fragment {
 
     private void setupRecyclerView(){
         // 어댑터 초기화 (처음에는 빈 리스트 또는 ViewModel의 초기값으로)
-        placeAdapter = new PlaceAdapter(new ArrayList<>());
+        placeAdapter = new PlaceAdapter(requireContext(), new ArrayList<>());
         binding.recyclerViewPlaces.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerViewPlaces.setAdapter(placeAdapter);
 

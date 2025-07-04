@@ -1,8 +1,12 @@
 package com.example.myapp.model;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,8 +17,11 @@ import java.util.ArrayList;
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder> {
 
     private List<Place> places;
+    private final Context context;
+    private int currentlyExpandedPlace = RecyclerView.NO_POSITION;
 
-    public PlaceAdapter(List<Place> places) {
+    public PlaceAdapter(Context context, List<Place> places) {
+        this.context = context;
         this.places = (places == null) ? new ArrayList<>() : places;
     }
 
@@ -23,18 +30,89 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         TextView textViewPlaceName;
         TextView textViewPlaceCategory;
         TextView textViewPlaceAddress;
+        HorizontalScrollView horizontalScrollViewImages;
+        LinearLayout linearLayoutImages;
 
         public PlaceViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewPlaceName = itemView.findViewById(R.id.textViewPlaceName);
             textViewPlaceCategory = itemView.findViewById(R.id.textViewPlaceCategory);
             textViewPlaceAddress = itemView.findViewById(R.id.textViewPlaceAddress);
+            horizontalScrollViewImages = itemView.findViewById(R.id.horizontalScrollViewImages);
+            linearLayoutImages = itemView.findViewById(R.id.linearLayoutImages);
         }
 
-        public void bind(final Place place) {
+        public void bind(final Place place, final Context context, final PlaceAdapter adapter, final int position) {
             textViewPlaceName.setText(place.getName());
             textViewPlaceCategory.setText(place.getCategory());
             textViewPlaceAddress.setText(place.getAddress());
+
+            final boolean isExpanded = position == adapter.currentlyExpandedPlace;
+            horizontalScrollViewImages.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+
+            if (isExpanded) {
+                populateImages(place, linearLayoutImages, context);
+            } else {
+                linearLayoutImages.removeAllViews();
+            }
+
+            // --- 아이템 클릭 리스너 설정 ---
+            itemView.setOnClickListener(v -> {
+                /*
+                // 현재 아이템의 확장/축소 상태 토글
+                boolean isVisible = horizontalScrollViewImages.getVisibility() == View.VISIBLE;
+                horizontalScrollViewImages.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+
+                if (!isVisible) { // 펼쳐질 때 이미지 동적 추가
+                    populateImages(place, linearLayoutImages, context);
+                } else { // 숨겨질 때 이미지 제거 (선택적, 메모리 관리)
+                    linearLayoutImages.removeAllViews();
+                }
+                */
+                int previouslyExpandedPlace = adapter.currentlyExpandedPlace;
+
+                if (isExpanded) { // 이미 열려 있는 아이템을 클릭한 경우
+                    adapter.currentlyExpandedPlace = RecyclerView.NO_POSITION;
+                } else { // 새로운 아이템을 클릭하거나, 닫힌 아이템을 클릭한 경우
+                    adapter.currentlyExpandedPlace = position;
+                }
+
+                if (adapter.currentlyExpandedPlace != previouslyExpandedPlace) {
+                    adapter.notifyItemChanged(previouslyExpandedPlace); // 이전에 열려 있던 아이템 닫기
+                }
+                if (adapter.currentlyExpandedPlace != RecyclerView.NO_POSITION &&
+                    adapter.currentlyExpandedPlace != previouslyExpandedPlace) { // 다른 아이템을 클릭한 경우
+                    adapter.notifyItemChanged(adapter.currentlyExpandedPlace); // 클릭한 아이템 열기
+                } else if (adapter.currentlyExpandedPlace == RecyclerView.NO_POSITION &&
+                    previouslyExpandedPlace == position) { // 열려 있는 아이템을 클릭한 경우
+                    adapter.notifyItemChanged(position);
+                }
+
+            });
+            /*
+            // 초기 상태에서는 이미지가 보이지 않도록 항상 설정 (클릭 시 로드)
+            horizontalScrollViewImages.setVisibility(View.GONE);
+            linearLayoutImages.removeAllViews();
+            */
+        }
+
+        private void populateImages(Place place, LinearLayout imageContainer, Context context) {
+            imageContainer.removeAllViews(); // 기존 이미지 제거
+
+            for (int i = 0; i < place.getReviews(); i++) {
+                // 임시로 플레이스홀더 이미지를 사용
+                ImageView imageView = new ImageView(context);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        300, // 너비
+                        300  // 높이
+                );
+                params.setMargins(0, 0, 15, 0); // 오른쪽 마진
+                imageView.setLayoutParams(params);
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imageView.setImageResource(R.drawable.ic_dashboard_black_24dp); // 임시 플레이스홀더
+
+                imageContainer.addView(imageView);
+            }
         }
     }
 
@@ -48,7 +126,8 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
 
     @Override
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
-        holder.bind(places.get(position));
+        //holder.bind(places.get(position));
+        holder.bind(places.get(position), context, this, holder.getAbsoluteAdapterPosition());
     }
 
     @Override

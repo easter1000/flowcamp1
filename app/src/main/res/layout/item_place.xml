@@ -37,4 +37,22 @@ android:background="?android:attr/selectableItemBackground"> <!-- 클릭 효과 
         app:layout_constraintTop_toBottomOf="@id/textViewPlaceName"
         tools:text="식당 주소 123" />
 
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollViewImages"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/textViewPlaceAddress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" >
+
+        <LinearLayout
+            android:id="@+id/linearLayoutImages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
