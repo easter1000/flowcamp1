@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import com.google.android.material.divider.MaterialDividerItemDecoration;
 
 import com.example.myapp.databinding.FragmentHomeBinding;
 import com.example.myapp.model.Place;
@@ -50,6 +51,13 @@ public class HomeFragment extends Fragment {
         placeAdapter = new PlaceAdapter(new ArrayList<>());
         binding.recyclerViewPlaces.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerViewPlaces.setAdapter(placeAdapter);
+
+        // 구분선
+        MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(getContext(), MaterialDividerItemDecoration.VERTICAL);
+        divider.setDividerInsetStart(32);
+        divider.setDividerInsetEnd(32);
+        divider.setLastItemDecorated(false);
+        binding.recyclerViewPlaces.addItemDecoration(divider);
     }
 
     private void observeViewModel() {
