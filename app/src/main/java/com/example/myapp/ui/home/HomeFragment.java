@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-//import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,16 +14,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
 
 import com.example.myapp.databinding.FragmentHomeBinding;
-import com.example.myapp.model.Place;
-import com.example.myapp.model.PlaceAdapter;
+import com.example.myapp.data.Restaurant;
+import com.example.myapp.data.MenuItem;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
-    private PlaceAdapter placeAdapter;
+    private HomeAdapter homeAdapter;
     private HomeViewModel homeViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -48,9 +46,9 @@ public class HomeFragment extends Fragment {
 
     private void setupRecyclerView(){
         // 어댑터 초기화 (처음에는 빈 리스트 또는 ViewModel의 초기값으로)
-        placeAdapter = new PlaceAdapter(requireContext(), new ArrayList<>());
+        homeAdapter = new HomeAdapter(requireContext());
         binding.recyclerViewPlaces.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.recyclerViewPlaces.setAdapter(placeAdapter);
+        binding.recyclerViewPlaces.setAdapter(homeAdapter);
 
         // 구분선
         MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(getContext(), MaterialDividerItemDecoration.VERTICAL);
@@ -62,16 +60,28 @@ public class HomeFragment extends Fragment {
 
     private void observeViewModel() {
         // HomeViewModel에서 장소 목록 LiveData를 관찰
-        homeViewModel.getPlaces().observe(getViewLifecycleOwner(), new Observer<List<Place>>() {
+        homeViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
-            public void onChanged(List<Place> places) {
+            public void onChanged(List<Restaurant> restaurants) {
                 // LiveData가 변경될 때마다 어댑터의 데이터 업데이트
-                if (placeAdapter != null && places != null ) {
-                    placeAdapter.updateData(places);
+                if (homeAdapter != null && restaurants != null ) {
+                    homeAdapter.setRestaurants(restaurants);
+                }
+            }
+        });
+
+        homeViewModel.getMenuItems().observe(getViewLifecycleOwner(), new Observer<List<MenuItem>>() {
+            @Override
+            public void onChanged(List<MenuItem> menuItems) {
+                // LiveData가 변경될 때마다 어댑터의 데이터 업데이트
+                if (homeAdapter != null && menuItems != null ) {
+                    homeAdapter.setMenuItems(menuItems);
                 }
             }
         });
     }
+
+
 
     @Override
     public void onDestroyView() {
