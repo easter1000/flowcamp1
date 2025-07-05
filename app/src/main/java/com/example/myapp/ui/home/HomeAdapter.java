@@ -21,6 +21,7 @@ import com.example.myapp.data.db.Converters;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantViewHolder> {
@@ -67,6 +68,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder {
         TextView textViewRestaurantName;
         TextView textViewRestaurantType;
+        TextView textViewRestaurantRating;
         TextView textViewRestaurantLocation;
         HorizontalScrollView horizontalScrollViewImages;
         LinearLayout linearLayoutImages;
@@ -75,23 +77,34 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             super(itemView);
             textViewRestaurantName = itemView.findViewById(R.id.textViewPlaceName);
             textViewRestaurantType = itemView.findViewById(R.id.textViewPlaceCategory);
+            textViewRestaurantRating = itemView.findViewById(R.id.textViewAverageRating);
             textViewRestaurantLocation = itemView.findViewById(R.id.textViewPlaceAddress);
             horizontalScrollViewImages = itemView.findViewById(R.id.horizontalScrollViewImages);
             linearLayoutImages = itemView.findViewById(R.id.linearLayoutImages);
         }
 
         public void bind(final Restaurant restaurant, final Context context, final HomeAdapter adapter, final int position) {
+
+            List<MenuItem> restaurantMenus = menuItems.stream()
+                    .filter(m -> m.restaurantId == restaurant.id)
+                    .collect(Collectors.toList());
+
+            float ratingSum = 0;
+            int ratingCount = restaurantMenus.size();
+            for (MenuItem m : restaurantMenus) {
+                ratingSum += m.rating;
+            }
+            float averageRating = ratingSum / ratingCount;
+
             textViewRestaurantName.setText(restaurant.name);
             textViewRestaurantType.setText(Converters.fromCuisine(restaurant.cuisineType));
+            textViewRestaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
             textViewRestaurantLocation.setText(restaurant.location);
 
             final boolean isOpened = position == adapter.currentlyOpened;
             horizontalScrollViewImages.setVisibility(isOpened ? View.VISIBLE : View.GONE);
 
             if (isOpened) {
-                List<MenuItem> restaurantMenus = menuItems.stream()
-                                .filter(m -> m.restaurantId == restaurant.id)
-                                        .collect(Collectors.toList());
                 populateImages(restaurantMenus, linearLayoutImages, context);
             } else {
                 linearLayoutImages.removeAllViews();
