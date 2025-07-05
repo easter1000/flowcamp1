@@ -20,6 +20,7 @@ import com.example.myapp.R;
 import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
+import com.example.myapp.ui.DBRepository;
 
 import java.util.List;
 
@@ -99,7 +100,7 @@ public class AddMenuDialogFragment extends DialogFragment {
                     dialog.dismiss();
                 };
 
-                new GalleryRepository(requireContext())
+                new DBRepository(requireContext())
                         .restaurantExists(restName, exists -> {
                             if (exists) {
                                 createAndReturn.run();
@@ -118,7 +119,7 @@ public class AddMenuDialogFragment extends DialogFragment {
     }
 
     private Restaurant findExistingRestaurant(String name) {
-        GalleryRepository repo = new GalleryRepository(requireContext());
+        DBRepository repo = new DBRepository(requireContext());
         List<Restaurant> restaurants = repo.getAllRestaurants().getValue();
         if (restaurants != null) {
             for (Restaurant r : restaurants) {
