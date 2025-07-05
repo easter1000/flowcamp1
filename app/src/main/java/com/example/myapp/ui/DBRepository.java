@@ -6,6 +6,7 @@ import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
 
+import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.dao.MenuItemDao;
 import com.example.myapp.data.dao.RestaurantDao;
 import com.example.myapp.data.db.AppDatabase;
@@ -30,6 +31,12 @@ public class DBRepository {
     }
 
     public LiveData<List<MenuItem>> getAllMenus() { return menuItemDao.getAll(); }
+    public LiveData<List<MenuItem>> getByType(CuisineType type) {
+        if (type == CuisineType.ALL) {
+            return menuItemDao.getAll();
+        }
+        return menuItemDao.getByType(type);
+    }
 
     public void insertMenu(MenuItem item) {
         io.execute(() -> menuItemDao.insert(item));

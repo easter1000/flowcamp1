@@ -39,4 +39,7 @@ public class MenuItem {
 
     @ColumnInfo(name="restaurant_id")
     public long restaurantId;
+
+    @ColumnInfo(name="price")
+    public int price;
 }

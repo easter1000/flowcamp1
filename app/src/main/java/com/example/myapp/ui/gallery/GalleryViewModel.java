@@ -5,7 +5,10 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 
+import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
 import com.example.myapp.ui.DBRepository;
@@ -17,11 +20,12 @@ public class GalleryViewModel extends AndroidViewModel {
     private final DBRepository repo;
     private final LiveData<List<MenuItem>> menuItems;
     private final LiveData<List<Restaurant>> restaurants;
+    private final MutableLiveData<CuisineType> filterType = new MutableLiveData<>();
 
     public GalleryViewModel(@NonNull Application app) {
         super(app);
         repo = new DBRepository(app);
-        menuItems = repo.getAllMenus();
+        menuItems = Transformations.switchMap(filterType, repo::getByType);
         restaurants = repo.getAllRestaurants();
     }
 
@@ -30,12 +34,7 @@ public class GalleryViewModel extends AndroidViewModel {
 
     public void addMenu(MenuItem item) { repo.insertMenu(item); }
 
-    public void addRestaurantWithFirstMenu(Restaurant r, MenuItem first) {
-        repo.insertRestaurant(r, id -> {
-            first.restaurantId = id;
-            addMenu(first);
-        });
+    public void loadImages(CuisineType type) {
+        filterType.setValue(type);
     }
-
-    public void loadImages() {}
 }

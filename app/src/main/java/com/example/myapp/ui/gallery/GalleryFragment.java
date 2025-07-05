@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.ImageView;
 
@@ -25,8 +26,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myapp.R;
+import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
+import com.example.myapp.ui.DBRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
     private GalleryViewModel viewModel;
     private RecyclerView recyclerView;
     private GalleryAdapter adapter;
+    private CuisineType current = CuisineType.ALL;
 
     @Nullable
     @Override
@@ -56,10 +60,10 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         viewModel = new ViewModelProvider(this).get(GalleryViewModel.class);
 
         Spinner spinner = view.findViewById(R.id.spinner_filter);
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                 requireContext(),
-                R.array.gallery_filter_options,
-                android.R.layout.simple_spinner_item
+                android.R.layout.simple_spinner_dropdown_item,
+                CuisineType.getDisplayNames(true)
         );
         spinnerAdapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item
@@ -90,7 +94,8 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-
+                current = CuisineType.values()[pos];
+                viewModel.loadImages(current);
             }
             @Override public void onNothingSelected(AdapterView<?> parent) { }
         });
@@ -110,7 +115,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         viewModel.getMenuItems().observe(getViewLifecycleOwner(), adapter::setData);
 
-        viewModel.loadImages();
+        viewModel.loadImages(current);
     }
 
     public void onMenuClicked(MenuItem item) {
@@ -135,11 +140,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
     @Override
     public void onCreated(MenuItem menu, Restaurant rest) {
-        if (rest == null) {
-            viewModel.addMenu(menu);
-        } else {
-            viewModel.addRestaurantWithFirstMenu(rest, menu);
-        }
+        viewModel.addMenu(menu);
     }
 
     public interface OnMenuClickListener { void onMenuClicked(MenuItem item); }
@@ -177,18 +178,21 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                     .error(R.drawable.placeholder)
                     .into(holder.imageView);
             holder.itemView.setOnClickListener(v -> listener.onMenuClicked(data.get(position)));
+            holder.ratingBar.setRating(data.get(position).rating);
         }
 
         @Override
         public int getItemCount() {
-            return data.size();
+            return data != null ? data.size() : 0;
         }
 
         public static class ImageViewHolder extends RecyclerView.ViewHolder {
             public ImageView imageView;
+            public RatingBar ratingBar;
             public ImageViewHolder(View itemView) {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.imageView);
+                ratingBar = itemView.findViewById(R.id.ratingBar);
             }
         }
     }
