@@ -8,18 +8,19 @@ import androidx.lifecycle.LiveData;
 
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
+import com.example.myapp.ui.DBRepository;
 
 import java.util.List;
 
 public class GalleryViewModel extends AndroidViewModel {
 
-    private final GalleryRepository repo;
+    private final DBRepository repo;
     private final LiveData<List<MenuItem>> menuItems;
     private final LiveData<List<Restaurant>> restaurants;
 
     public GalleryViewModel(@NonNull Application app) {
         super(app);
-        repo = new GalleryRepository(app);
+        repo = new DBRepository(app);
         menuItems = repo.getAllMenus();
         restaurants = repo.getAllRestaurants();
     }

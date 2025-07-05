@@ -1,4 +1,4 @@
-package com.example.myapp.ui.gallery;
+package com.example.myapp.ui;
 
 import android.content.Context;
 import android.os.Handler;
@@ -17,13 +17,13 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-public class GalleryRepository {
+public class DBRepository {
 
     private final RestaurantDao restaurantDao;
     private final MenuItemDao menuItemDao;
     private final Executor io = Executors.newSingleThreadExecutor();
 
-    public GalleryRepository(Context ctx) {
+    public DBRepository(Context ctx) {
         AppDatabase db = AppDatabase.getInstance(ctx);
         restaurantDao = db.restaurantDao();
         menuItemDao = db.menuItemDao();

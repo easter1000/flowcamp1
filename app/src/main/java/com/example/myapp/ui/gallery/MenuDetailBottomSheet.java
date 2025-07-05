@@ -15,12 +15,13 @@ import com.bumptech.glide.Glide;
 import com.example.myapp.R;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
+import com.example.myapp.ui.DBRepository;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class MenuDetailBottomSheet extends BottomSheetDialogFragment {
 
     private static final String ARG_MENU_ID = "menu_id";
-    private GalleryRepository repo;
+    private DBRepository repo;
 
     private ImageView mdImg;
     private TextView mdName;
@@ -53,7 +54,7 @@ public class MenuDetailBottomSheet extends BottomSheetDialogFragment {
         mdRestName = v.findViewById(R.id.md_res);
         mdLocation = v.findViewById(R.id.md_location);
 
-        repo = new GalleryRepository(requireContext());
+        repo = new DBRepository(requireContext());
         long menuId = (getArguments() != null) ? getArguments().getLong(ARG_MENU_ID, -1) : -1;
 
         if (menuId == -1) {
