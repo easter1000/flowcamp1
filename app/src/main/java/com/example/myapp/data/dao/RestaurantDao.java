@@ -33,7 +33,7 @@ public interface RestaurantDao {
     LiveData<List<Restaurant>> getAll();
 
     @Transaction
-    @Query("SELECT * FROM restaurants WHERE id = :restaurantId")
+    @Query("SELECT * FROM restaurants NATURAL INNER JOIN menu_items WHERE id = :restaurantId")
     LiveData<RestaurantWithMenus> getRestaurantWithMenus(long restaurantId);
 
     @Transaction

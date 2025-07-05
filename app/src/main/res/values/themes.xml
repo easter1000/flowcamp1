@@ -13,4 +13,9 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+    <style name="RatingBar" parent="Widget.AppCompat.RatingBar.Small">
+        <item name="android:progressTint">#FFD700</item>
+        <item name="android:progressBackgroundTint">#D3D3D3</item>
+        <item name="android:secondaryProgressTint">#FFD700</item>
+    </style>
 </resources>

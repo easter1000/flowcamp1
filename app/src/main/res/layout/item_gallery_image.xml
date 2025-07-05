@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:padding="2dp">
 
@@ -9,6 +9,19 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/placeholder"/>
+        android:src="@drawable/placeholder" />
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        style="@style/RatingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:numStars="5"
+        android:rating="4.5"
+        android:stepSize="0.5"
+        android:translationX="10dp"
+        android:scaleY="0.7"
+        android:scaleX="0.7"/>
 
 </FrameLayout>

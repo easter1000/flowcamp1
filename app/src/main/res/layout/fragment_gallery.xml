@@ -25,7 +25,6 @@
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:dropDownWidth="match_parent"
-            android:entries="@array/gallery_filter_options"
             android:popupBackground="@android:color/white"
             android:spinnerMode="dropdown" />
 
