@@ -12,6 +12,7 @@ android:background="?android:attr/selectableItemBackground"> <!-- 클릭 효과 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:textColor="?attr/myTextColorPrimary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="식당 이름" />
@@ -22,6 +23,7 @@ android:background="?android:attr/selectableItemBackground"> <!-- 클릭 효과 
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:textSize="14sp"
+        android:textColor="?attr/myTextColorSecondary"
         app:layout_constraintStart_toEndOf="@id/textViewPlaceName"
         app:layout_constraintTop_toTopOf="@id/textViewPlaceName"
         app:layout_constraintBottom_toBottomOf="@id/textViewPlaceName"
@@ -33,18 +35,32 @@ android:background="?android:attr/selectableItemBackground"> <!-- 클릭 효과 
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:textSize="14sp"
+        android:textColor="?attr/myTextColorSecondary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textViewPlaceName"
         tools:text="⭐ 4.5" />
+
+    <TextView
+        android:id="@+id/textViewRatingAddressSeparator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dot_separator"
+        android:textSize="14sp"
+        android:textColor="?attr/myTextColorSecondary"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintStart_toEndOf="@id/textViewAverageRating"
+        app:layout_constraintTop_toBottomOf="@id/textViewPlaceName" />
 
     <TextView
         android:id="@+id/textViewPlaceAddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
         android:textSize="14sp"
-        app:layout_constraintStart_toEndOf="@id/textViewAverageRating"
+        android:textColor="?attr/myTextColorSecondary"
+        app:layout_constraintStart_toEndOf="@id/textViewRatingAddressSeparator"
         app:layout_constraintTop_toBottomOf="@id/textViewPlaceName"
         tools:text="식당 주소 123" />
 
