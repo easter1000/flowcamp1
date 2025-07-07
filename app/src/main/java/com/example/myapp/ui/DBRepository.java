@@ -31,11 +31,17 @@ public class DBRepository {
     }
 
     public LiveData<List<MenuItem>> getAllMenus() { return menuItemDao.getAll(); }
-    public LiveData<List<MenuItem>> getByType(CuisineType type) {
+    public LiveData<List<MenuItem>> getMenuByType(CuisineType type) {
         if (type == CuisineType.ALL) {
             return menuItemDao.getAll();
         }
         return menuItemDao.getByType(type);
+    }
+    public LiveData<List<Restaurant>> getRestaurantByType(CuisineType type) {
+        if (type == CuisineType.ALL) {
+            return restaurantDao.getAll();
+        }
+        return restaurantDao.getByType(type);
     }
 
     public void insertMenu(MenuItem item) {
@@ -60,6 +66,17 @@ public class DBRepository {
         });
     }
 
+    public void updateMenu(MenuItem item) {
+        io.execute(() -> menuItemDao.update(item));
+    }
+
+    public void deleteMenuById(long menuId) {
+        io.execute(() -> menuItemDao.deleteById(menuId));
+    }
+
+    public void deleteRestaurant(Restaurant restaurant) {
+        io.execute(() -> restaurantDao.delete(restaurant));
+    }
 
     public interface InsertCallback { void onInserted(long id); }
 }

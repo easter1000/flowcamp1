@@ -1,15 +1,20 @@
 package com.example.myapp.ui.gallery;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Gallery;
 import android.widget.ImageButton;
 import android.widget.RatingBar;
 import android.widget.Spinner;
@@ -29,16 +34,19 @@ import com.example.myapp.R;
 import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
-import com.example.myapp.ui.DBRepository;
+import com.example.myapp.data.SortOrder;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-public class GalleryFragment extends Fragment implements AddMenuDialogFragment.OnMenuCreated {
+public class GalleryFragment extends Fragment implements AddMenuDialogFragment.OnMenuCreatedListener {
     private GalleryViewModel viewModel;
     private RecyclerView recyclerView;
     private GalleryAdapter adapter;
     private CuisineType current = CuisineType.ALL;
+    private int selectedSortIndex = 7;
 
     @Nullable
     @Override
@@ -71,7 +79,6 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         spinner.setAdapter(spinnerAdapter);
 
         ImageButton btnAdd = view.findViewById(R.id.btn_add);
-        ImageButton btnFilter = view.findViewById(R.id.btn_filter);
         ImageButton btnSort = view.findViewById(R.id.btn_sort);
         ImageButton btnToggle = view.findViewById(R.id.btn_toggle_view);
 
@@ -82,11 +89,37 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
             i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
             pickMediaLauncher.launch(i);
         });
-        btnFilter.setOnClickListener(v -> {
-
-        });
         btnSort.setOnClickListener(v -> {
+            final String[] items = {"이름 A-Z", "이름 Z-A", "평점 높은순", "평점 낮은순", "가격 높은순", "가격 낮은순", "오래된순", "최신순"};
 
+            final CharSequence[] styledItems = new CharSequence[items.length];
+            for (int i = 0; i < items.length; i++) {
+                SpannableString s = new SpannableString(items[i]);
+                if (i == selectedSortIndex) {
+                    s.setSpan(new StyleSpan(Typeface.BOLD), 0, s.length(), 0);
+                }
+                styledItems[i] = s;
+            }
+
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("정렬 기준")
+                    .setItems(styledItems, (dialog, which) -> {
+                        selectedSortIndex = which;
+
+                        SortOrder order;
+                        switch (which) {
+                            case 0: order = SortOrder.NAME_ASC; break;
+                            case 1: order = SortOrder.NAME_DESC; break;
+                            case 2: order = SortOrder.RATING_ASC; break;
+                            case 3: order = SortOrder.RATING_DESC; break;
+                            case 4: order = SortOrder.PRICE_ASC; break;
+                            case 5: order = SortOrder.PRICE_DESC; break;
+                            case 6: order = SortOrder.DATE_ASC; break;
+                            case 7: default: order = SortOrder.DATE_DESC;
+                        }
+                        adapter.sort(order);
+                    })
+                    .show();
         });
         btnToggle.setOnClickListener(v -> {
 
@@ -95,7 +128,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 current = CuisineType.values()[pos];
-                viewModel.loadImages(current);
+                viewModel.setFilter(current);
             }
             @Override public void onNothingSelected(AdapterView<?> parent) { }
         });
@@ -115,7 +148,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         viewModel.getMenuItems().observe(getViewLifecycleOwner(), adapter::setData);
 
-        viewModel.loadImages(current);
+        viewModel.setFilter(current);
     }
 
     public void onMenuClicked(MenuItem item) {
@@ -132,7 +165,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                             if (uri != null) {
                                 requireContext().getContentResolver().takePersistableUriPermission(
                                         uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                AddMenuDialogFragment.newInstance(uri, this)
+                                AddMenuDialogFragment.newInstanceForCreate(uri, this)
                                         .show(getChildFragmentManager(), "addMenu");
                             }
                         }
@@ -151,6 +184,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         private final Context context;
         private List<MenuItem> data;
         private final OnMenuClickListener listener;
+        private SortOrder sortOrder = SortOrder.DATE_DESC;
 
         public GalleryAdapter(Context context, OnMenuClickListener l) {
             this.context = context;
@@ -160,6 +194,24 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         public void setData(List<MenuItem> menus) {
             this.data = menus;
+            sort(sortOrder);
+        }
+
+        public void sort(SortOrder order) {
+            sortOrder = order;
+            if (data == null) return;
+            Comparator<MenuItem> comp;
+            switch (order) {
+                case NAME_ASC:   comp = Comparator.comparing(m -> m.menuName.toLowerCase()); break;
+                case NAME_DESC:  comp = Comparator.comparing((MenuItem m) -> m.menuName.toLowerCase()).reversed(); break;
+                case RATING_ASC: comp = Comparator.comparingDouble(m -> m.rating); break;
+                case RATING_DESC:comp = Comparator.comparingDouble((MenuItem m) -> m.rating).reversed(); break;
+                case PRICE_ASC:  comp = Comparator.comparingInt(m -> m.price); break;
+                case PRICE_DESC: comp = Comparator.comparingInt((MenuItem m) -> m.price).reversed(); break;
+                case DATE_ASC:   comp = Comparator.comparingLong(m -> m.id); break;
+                default:         comp = Comparator.comparingLong((MenuItem m) -> m.id).reversed();
+            }
+            Collections.sort(data, comp);
             notifyDataSetChanged();
         }
 

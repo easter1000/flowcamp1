@@ -25,7 +25,7 @@ public class GalleryViewModel extends AndroidViewModel {
     public GalleryViewModel(@NonNull Application app) {
         super(app);
         repo = new DBRepository(app);
-        menuItems = Transformations.switchMap(filterType, repo::getByType);
+        menuItems = Transformations.switchMap(filterType, repo::getMenuByType);
         restaurants = repo.getAllRestaurants();
     }
 
@@ -34,7 +34,7 @@ public class GalleryViewModel extends AndroidViewModel {
 
     public void addMenu(MenuItem item) { repo.insertMenu(item); }
 
-    public void loadImages(CuisineType type) {
+    public void setFilter(CuisineType type) {
         filterType.setValue(type);
     }
 }

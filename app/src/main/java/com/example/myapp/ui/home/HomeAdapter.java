@@ -1,13 +1,15 @@
 package com.example.myapp.ui.home;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,19 +19,25 @@ import com.bumptech.glide.Glide;
 import com.example.myapp.R;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
+import com.example.myapp.data.SortOrder;
 import com.example.myapp.data.db.Converters;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantViewHolder> {
 
     private final Context context;
     private List<Restaurant> restaurants;
-    private static List<MenuItem> menuItems;
-    private int currentlyOpened = RecyclerView.NO_POSITION;
+    private List<MenuItem> menuItems;
+    private final Set<Integer> openedItems = new HashSet<>();
+    private SortOrder sortOrder = SortOrder.DATE_DESC;
 
     public HomeAdapter(Context context) {
         this.context = context;
@@ -38,18 +46,61 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
     public void setRestaurants(List<Restaurant> restaurants) {
         this.restaurants = restaurants;
-        notifyDataSetChanged();
+        sort(sortOrder);
     }
 
     public void setMenuItems(List<MenuItem> menuItems) {
-        HomeAdapter.menuItems = menuItems;
+        this.menuItems = menuItems;
+        sort(sortOrder);
+    }
+
+    public void sort(SortOrder order) {
+        this.sortOrder = order;
+        if (restaurants == null) return;
+
+        Comparator<Restaurant> comp;
+        switch (order) {
+            case NAME_ASC: comp = Comparator.comparing(r -> r.name.toLowerCase()); break;
+            case NAME_DESC: comp = Comparator.comparing((Restaurant r) -> r.name.toLowerCase()).reversed(); break;
+            case RATING_ASC: comp = Comparator.comparingDouble(this::avgRating); break;
+            case RATING_DESC: comp = Comparator.comparingDouble(this::avgRating).reversed(); break;
+            case DATE_ASC: comp = Comparator.comparingLong(r -> r.id); break;
+            default: comp = Comparator.comparingLong((Restaurant r) -> r.id).reversed();
+        }
+        Collections.sort(restaurants, comp);
         notifyDataSetChanged();
+    }
+
+    private double avgRating(Restaurant r) {
+        if (menuItems == null) return 0;
+        double sum = 0; int cnt = 0;
+        for (MenuItem m : menuItems) if (m.restaurantId == r.id) { sum += m.rating; cnt++; }
+        return cnt == 0 ? 0 : sum / cnt;
+    }
+
+    public interface OnImageClickListener {
+        void onImageClick(long menuId);
+    }
+
+    public interface OnDeleteClickListener {
+        void onDeleteClick(Restaurant restaurant);
+    }
+
+    private OnImageClickListener imageClickListener;
+    private OnDeleteClickListener deleteClickListener;
+
+    public void setOnImageClickListener(OnImageClickListener listener) {
+        this.imageClickListener = listener;
+    }
+
+    public void setOnDeleteClickListener(OnDeleteClickListener listener) {
+        this.deleteClickListener = listener;
     }
 
     @NonNull
     @Override
     public RestaurantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = android.view.LayoutInflater.from(parent.getContext())
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_place, parent, false);
         return new RestaurantViewHolder(view);
     }
@@ -57,7 +108,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
     @Override
     public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
         Restaurant restaurant = restaurants.get(position);
-        holder.bind(restaurant, context, this, position);
+        holder.bind(restaurant, context, this, menuItems);
     }
 
     @Override
@@ -72,6 +123,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         TextView textViewRestaurantLocation;
         HorizontalScrollView horizontalScrollViewImages;
         LinearLayout linearLayoutImages;
+        ImageView delBtn;
 
         public RestaurantViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -81,128 +133,111 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             textViewRestaurantLocation = itemView.findViewById(R.id.textViewPlaceAddress);
             horizontalScrollViewImages = itemView.findViewById(R.id.horizontalScrollViewImages);
             linearLayoutImages = itemView.findViewById(R.id.linearLayoutImages);
+            delBtn = itemView.findViewById(R.id.del_btn);
         }
 
-        public void bind(final Restaurant restaurant, final Context context, final HomeAdapter adapter, final int position) {
-
-            List<MenuItem> restaurantMenus = menuItems.stream()
-                    .filter(m -> m.restaurantId == restaurant.id)
-                    .collect(Collectors.toList());
+        public void bind(final Restaurant restaurant, final Context context, final HomeAdapter adapter, final List<MenuItem> menuItems) {
+            List<MenuItem> restaurantMenus = new ArrayList<>();
+            if (menuItems != null) {
+                restaurantMenus = menuItems.stream()
+                        .filter(m -> m.restaurantId == restaurant.id)
+                        .collect(Collectors.toList());
+            }
 
             float ratingSum = 0;
             int ratingCount = restaurantMenus.size();
             for (MenuItem m : restaurantMenus) {
                 ratingSum += m.rating;
             }
-            float averageRating = ratingSum / ratingCount;
+            float averageRating;
+            if (ratingCount > 0) {
+                averageRating = ratingSum / ratingCount;
+                textViewRestaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
+            } else {
+                textViewRestaurantRating.setText("⭐ N/A");
+            }
 
             textViewRestaurantName.setText(restaurant.name);
             textViewRestaurantType.setText(Converters.fromCuisine(restaurant.cuisineType));
-            textViewRestaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
             textViewRestaurantLocation.setText(restaurant.location);
 
-            final boolean isOpened = position == adapter.currentlyOpened;
+            final int position = getBindingAdapterPosition();
+            if (position == RecyclerView.NO_POSITION) {
+                return;
+            }
+
+            final boolean isOpened = adapter.openedItems.contains(position);
             horizontalScrollViewImages.setVisibility(isOpened ? View.VISIBLE : View.GONE);
 
             if (isOpened) {
-                populateImages(restaurantMenus, linearLayoutImages, context);
+                populateImages(restaurantMenus, linearLayoutImages, context, adapter);
             } else {
                 linearLayoutImages.removeAllViews();
             }
 
-            // --- 아이템 클릭 리스너 설정 ---
             itemView.setOnClickListener(v -> {
-                /*
-                // 현재 아이템의 확장/축소 상태 토글
-                boolean isVisible = horizontalScrollViewImages.getVisibility() == View.VISIBLE;
-                horizontalScrollViewImages.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+                int clickedPosition = getBindingAdapterPosition();
+                if (clickedPosition == RecyclerView.NO_POSITION) return;
 
-                if (!isVisible) { // 펼쳐질 때 이미지 동적 추가
-                    populateImages(place, linearLayoutImages, context);
-                } else { // 숨겨질 때 이미지 제거 (선택적, 메모리 관리)
-                    linearLayoutImages.removeAllViews();
-                }
-                */
-                int previouslyOpened = adapter.currentlyOpened;
-
-                if (isOpened) { // 이미 열려 있는 아이템을 클릭한 경우
-                    adapter.currentlyOpened = RecyclerView.NO_POSITION;
-                } else { // 새로운 아이템을 클릭하거나, 닫힌 아이템을 클릭한 경우
-                    adapter.currentlyOpened = position;
+                if (adapter.openedItems.contains(clickedPosition)) {
+                    adapter.openedItems.remove(clickedPosition);
+                } else {
+                    adapter.openedItems.add(clickedPosition);
                 }
 
-                if (adapter.currentlyOpened != previouslyOpened) {
-                    adapter.notifyItemChanged(previouslyOpened); // 이전에 열려 있던 아이템 닫기
-                }
-                if (adapter.currentlyOpened != RecyclerView.NO_POSITION &&
-                        adapter.currentlyOpened != previouslyOpened) { // 다른 아이템을 클릭한 경우
-                    adapter.notifyItemChanged(adapter.currentlyOpened); // 클릭한 아이템 열기
-                } else if (adapter.currentlyOpened == RecyclerView.NO_POSITION &&
-                        previouslyOpened == position) { // 열려 있는 아이템을 클릭한 경우
-                    adapter.notifyItemChanged(position);
-                }
-
+                adapter.notifyItemChanged(clickedPosition);
             });
-            /*
-            // 초기 상태에서는 이미지가 보이지 않도록 항상 설정 (클릭 시 로드)
-            horizontalScrollViewImages.setVisibility(View.GONE);
-            linearLayoutImages.removeAllViews();
-            */
+
+            delBtn.setOnClickListener(v -> {
+                Log.d("HomeAdapter", "Delete button clicked for: " + restaurant.name);
+                if (adapter.deleteClickListener != null) {
+                    adapter.deleteClickListener.onDeleteClick(restaurant);
+                } else {
+                    Log.e("HomeAdapter", "DeleteClickListener is NULL!");
+                }
+            });
         }
 
-        private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context) {
-            imageContainer.removeAllViews(); // 기존 이미지 제거
+        private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context, HomeAdapter adapter) {
+            imageContainer.removeAllViews();
 
-            for (int i = 0; i < restaurantMenus.size(); i++) {
-                MenuItem menuItem = restaurantMenus.get(i);
+            final int IMAGE_SIZE_DP = 120;
+            final int MARGIN_RIGHT_DP = 8;
 
-                FrameLayout frameLayout = new FrameLayout(context);
-                LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
-                        300, // 너비
-                        300  // 높이
-                );
-                containerParams.setMargins(0, 0, 15, 0); // 오른쪽 마진
-                frameLayout.setLayoutParams(containerParams);
+            int imageSizeInPx = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, IMAGE_SIZE_DP, context.getResources().getDisplayMetrics());
+            int marginRightInPx = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, MARGIN_RIGHT_DP, context.getResources().getDisplayMetrics());
 
-                ImageView imageView = new ImageView(context);
-                FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT
-                );
-                imageView.setLayoutParams(imageParams);
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            LayoutInflater inflater = LayoutInflater.from(context);
 
-                /*
-                imageView.setImageResource(R.drawable.ic_dashboard_black_24dp); // 임시 플레이스홀더
-                frameLayout.addView(imageView);
-                 */
+            for (MenuItem menuItem : restaurantMenus) {
+                View itemView = inflater.inflate(R.layout.item_gallery_image, imageContainer, false);
+
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(imageSizeInPx, imageSizeInPx);
+                params.rightMargin = marginRightInPx;
+                itemView.setLayoutParams(params);
+
+                itemView.setOnClickListener(v -> {
+                    if (adapter.imageClickListener != null) {
+                        adapter.imageClickListener.onImageClick(menuItem.id);
+                    }
+                });
+
+                ImageView imageView = itemView.findViewById(R.id.imageView);
+                RatingBar ratingBar = itemView.findViewById(R.id.ratingBar);
 
                 Glide.with(context)
                         .load(menuItem.imageUri)
+                        .centerCrop()
                         .placeholder(R.drawable.placeholder)
                         .error(R.drawable.ic_dashboard_black_24dp)
                         .into(imageView);
-                frameLayout.addView(imageView);
 
-                TextView indexTextView = new TextView(context);
-                FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                        FrameLayout.LayoutParams.WRAP_CONTENT
-                );
-                textParams.setMargins(16, 16, 0, 0);
-                indexTextView.setPadding(6, 6, 6, 6);
+                ratingBar.setRating(menuItem.rating);
 
-                indexTextView.setLayoutParams(textParams);
-                indexTextView.setText(menuItem.menuName);
-                indexTextView.setTextSize(12);
-                indexTextView.setTextColor(Color.WHITE);
-                indexTextView.setBackgroundColor(Color.argb(128, 0, 0, 0));
-
-                frameLayout.addView(indexTextView);
-
-                imageContainer.addView(frameLayout);
+                imageContainer.addView(itemView);
             }
         }
     }
-
 }

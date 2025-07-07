@@ -29,4 +29,7 @@ public interface MenuItemDao {
 
     @Query("SELECT * FROM menu_items WHERE id = :id")
     LiveData<MenuItem> getById(long id);
+
+    @Query("DELETE FROM menu_items WHERE id = :menuId")
+    void deleteById(long menuId);
 }

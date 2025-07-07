@@ -34,6 +34,17 @@
             android:layout_weight="1"/>
 
         <ImageButton
+            android:id="@+id/btn_toggle_view"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_grid"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@null"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"
+            android:padding="4dp"/>
+
+        <ImageButton
             android:id="@+id/btn_add"
             android:layout_width="32dp"
             android:layout_height="32dp"
@@ -42,18 +53,7 @@
             android:src="@drawable/ic_add"
             android:adjustViewBounds="true"
             android:scaleType="centerInside"
-            android:padding="2dp"/>
-
-        <ImageButton
-            android:id="@+id/btn_filter"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_filter"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@null"
-            android:adjustViewBounds="true"
-            android:scaleType="centerInside"
-            android:padding="2dp"/>
+            android:padding="2dp" />
 
         <ImageButton
             android:id="@+id/btn_sort"
@@ -65,17 +65,6 @@
             android:adjustViewBounds="true"
             android:scaleType="centerInside"
             android:padding="3dp"/>
-
-        <ImageButton
-            android:id="@+id/btn_toggle_view"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_grid"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@null"
-            android:adjustViewBounds="true"
-            android:scaleType="centerInside"
-            android:padding="4dp"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
