@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:backgroundTint="#D3D3D3"
     android:fillViewport="true"
     android:padding="30dp">
 
@@ -15,84 +17,109 @@
             android:layout_width="match_parent"
             android:layout_height="180dp"
             android:adjustViewBounds="true"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="20dp"/>
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_menu_name"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="메뉴 이름"
-            android:textStyle="bold"
-            android:paddingTop="8dp"/>
-        <EditText
-            android:id="@+id/et_menu_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:padding="8dp"
-            android:singleLine="true" />
+            android:hint="메뉴 이름">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="가게 이름"
-            android:textStyle="bold"
-            android:paddingTop="8dp"/>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_menu_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <AutoCompleteTextView
-            android:id="@+id/et_restaurant"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_restaurant"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:padding="8dp"
-            android:singleLine="true" />
+            android:layout_marginTop="8dp"
+            android:hint="가게 이름">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="한줄평"
-            android:textStyle="bold"
-            android:paddingTop="8dp"/>
+            <AutoCompleteTextView
+                android:id="@+id/et_restaurant"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <EditText
-            android:id="@+id/review"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_review"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint=""
-            android:padding="8dp"
-            android:singleLine="true"/>
+            android:layout_marginTop="8dp"
+            android:hint="한줄평">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="가격"
-            android:textStyle="bold"
-            android:paddingTop="8dp"/>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/review"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <EditText
-            android:id="@+id/price"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_price"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint=""
-            android:padding="8dp"
-            android:singleLine="true"
-            android:inputType="number" />
+            android:layout_marginTop="8dp"
+            android:hint="가격">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="별점"
-            android:textStyle="bold"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"/>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/price"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <RatingBar
             android:id="@+id/rating_bar"
             style="@style/Widget.AppCompat.RatingBar.Indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:layout_gravity="center_horizontal"
+            android:isIndicator="false"
             android:numStars="5"
+            android:progressBackgroundTint="@color/gray"
+            android:progressTint="@color/yellow_200"
             android:rating="5"
-            android:stepSize="0.5"
-            android:isIndicator="false" />
+            android:secondaryProgressTint="@color/yellow_200"
+            android:stepSize="0.5" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_cancel"
+                style="@style/CustomButton"
+                android:layout_width="100dp"
+                android:layout_height="35dp"
+                android:layout_marginEnd="35dp"
+                android:text="취소"
+                android:textSize="13sp"
+                android:textAlignment="center"/>
+
+            <Button
+                android:id="@+id/btn_select"
+                style="@style/CustomButton"
+                android:layout_width="100dp"
+                android:layout_height="35dp"
+                android:text="저장"
+                android:textSize="13sp"
+                android:textAlignment="center"/>
+
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

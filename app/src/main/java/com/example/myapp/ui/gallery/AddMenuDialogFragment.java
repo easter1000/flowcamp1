@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,34 +28,32 @@ import com.example.myapp.R;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
 import com.example.myapp.ui.DBRepository;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AddMenuDialogFragment extends DialogFragment {
 
-    // --- Arguments Keys ---
     private static final String ARG_MENU_ID = "menu_id";
     private static final String ARG_IMAGE_URI = "image_uri";
 
-    // --- Callbacks ---
     public interface OnMenuCreatedListener { void onCreated(MenuItem item, Restaurant restaurant); }
     public interface OnMenuUpdatedListener { void onUpdated(android.content.Context context); }
 
-    // --- Member Variables ---
     private OnMenuCreatedListener createListener;
     private OnMenuUpdatedListener updateListener;
     private DBRepository repo;
     private List<Restaurant> allRestaurantsList;
 
-    // UI Components
     private EditText menuNameEt, reviewEt, priceEt;
     private AutoCompleteTextView restaurantEt;
     private RatingBar ratingBar;
     private ImageView imageView;
     private AlertDialog dialog;
+    private TextInputLayout tilMenuName, tilRestaurant, tilPrice, tilReview;
+    private Button btnSelect, btnCancel;
 
-    // Data
     private long menuId = -1;
     private Uri imageUri;
     private MenuItem currentMenu;
@@ -101,15 +100,21 @@ public class AddMenuDialogFragment extends DialogFragment {
             Glide.with(this).load(imageUri).centerCrop().into(imageView);
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
-                .setView(v)
-                .setPositiveButton("저장", null)
-                .setNegativeButton("취소", null);
+        View customTitleView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_custom_title, null);
+        TextView titleTextView = customTitleView.findViewById(R.id.dialog_title_text);
+        ImageView backBtn = customTitleView.findViewById(R.id.dialog_title_back);
 
-        builder.setTitle(menuId != -1 ? "메뉴 정보 수정" : "메뉴 정보 입력");
+        titleTextView.setText(menuId != -1 ? "메뉴 정보 수정" : "메뉴 추가");
+        backBtn.setOnClickListener(view -> dismiss());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
+                .setCustomTitle(customTitleView)
+                .setView(v);
 
         dialog = builder.create();
         dialog.setOnShowListener(this::onDialogShow);
+        btnCancel.setOnClickListener(view -> dismiss());
+        btnSelect.setOnClickListener(view -> saveMenu());
 
         return dialog;
     }
@@ -121,24 +126,58 @@ public class AddMenuDialogFragment extends DialogFragment {
         reviewEt = v.findViewById(R.id.review);
         priceEt = v.findViewById(R.id.price);
         ratingBar = v.findViewById(R.id.rating_bar);
+
+        tilMenuName = v.findViewById(R.id.til_menu_name);
+        tilRestaurant = v.findViewById(R.id.til_restaurant);
+        tilPrice = v.findViewById(R.id.til_price);
+        tilReview = v.findViewById(R.id.til_review);
+
+        btnSelect = v.findViewById(R.id.btn_select);
+        btnCancel = v.findViewById(R.id.btn_cancel);
     }
 
     private void onDialogShow(DialogInterface dialogInterface) {
-        Button saveBtn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+        addValidationListener(menuNameEt, tilMenuName, 15, "최대 15자까지 입력 가능합니다");
+        addValidationListener(restaurantEt, tilRestaurant, 20, "최대 20자까지 입력 가능합니다");
+        addValidationListener(priceEt, tilPrice, 9, "최대 999,999,999원까지 입력 가능합니다");
+        addValidationListener(reviewEt, tilReview, 30, "최대 30자까지 입력 가능합니다");
 
-        TextWatcher textWatcher = new TextWatcher() {
-            @Override public void onTextChanged(CharSequence s, int st, int bf, int cnt) { saveBtn.setEnabled(checkFields()); }
-            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-            @Override public void afterTextChanged(Editable s) {}
-        };
+        btnSelect.setEnabled(menuId != -1 || checkFields());
+    }
 
-        menuNameEt.addTextChangedListener(textWatcher);
-        restaurantEt.addTextChangedListener(textWatcher);
-        priceEt.addTextChangedListener(textWatcher);
+    private void addValidationListener(EditText editText, TextInputLayout textInputLayout, int maxLength, String errorMsg) {
+        editText.addTextChangedListener(new TextWatcher() {
+            private boolean selfChange = false;
 
-        saveBtn.setEnabled(menuId != -1 || checkFields());
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-        saveBtn.setOnClickListener(v -> saveMenu());
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (selfChange) return;
+
+                if (s.length() > maxLength) {
+                    textInputLayout.setError(errorMsg);
+                } else {
+                    textInputLayout.setError(null);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (selfChange) return;
+
+                if (s.length() > maxLength) {
+                    selfChange = true;
+                    s.delete(maxLength, s.length());
+                    selfChange = false;
+                }
+
+                if (btnSelect != null) {
+                    btnSelect.setEnabled(checkFields());
+                }
+            }
+        });
     }
 
     private void loadMenuDataForEdit() {
@@ -255,7 +294,10 @@ public class AddMenuDialogFragment extends DialogFragment {
         boolean isMenuEmpty = menuNameEt.getText().toString().trim().isEmpty();
         boolean isRestaurantEmpty = restaurantEt.getText().toString().trim().isEmpty();
         boolean isPriceEmpty = priceEt.getText().toString().trim().isEmpty();
-        return !isMenuEmpty && !isRestaurantEmpty && !isPriceEmpty;
+        boolean isMenuShort = menuNameEt.getText().toString().trim().length() < 15;
+        boolean isRestaurantShort = restaurantEt.getText().toString().trim().length() < 20;
+        boolean isPriceShort = priceEt.getText().toString().trim().length() < 9;
+        return !isMenuEmpty && !isRestaurantEmpty && !isPriceEmpty && isMenuShort && isRestaurantShort && isPriceShort;
     }
 
     private Restaurant findExistingRestaurant(String name) {
