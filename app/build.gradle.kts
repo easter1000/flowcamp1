@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.googleSecretsGradlePlugin)
 }
 
 android {
@@ -34,6 +35,11 @@ android {
     }
 }
 
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
+}
+
 dependencies {
 
     implementation(libs.appcompat)
@@ -48,6 +54,7 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.gson)
     implementation(libs.room)
+    implementation(libs.google.maps.services)
     annotationProcessor(libs.glide)
     annotationProcessor(libs.room.compiler)
     testImplementation(libs.junit)
