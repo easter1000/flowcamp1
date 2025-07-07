@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">My app</string>
     <string name="title_home">Home</string>
+    <string name="dot_separator">∙</string>
     <string name="title_dashboard">Gallery</string>
     <string name="title_notifications">Map</string>
 </resources>
