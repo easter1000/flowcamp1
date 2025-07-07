@@ -2,12 +2,14 @@ package com.example.myapp.data.dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Embedded;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Relation;
 import androidx.room.Transaction;
 
+import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
 
@@ -29,6 +31,9 @@ public interface RestaurantDao {
     @Insert
     long insert(Restaurant restaurant);
 
+    @Delete
+    void delete(Restaurant restaurant);
+
     @Query("SELECT * FROM restaurants ORDER BY name")
     LiveData<List<Restaurant>> getAll();
 
@@ -42,6 +47,9 @@ public interface RestaurantDao {
 
     @Query("SELECT * FROM restaurants WHERE id = :id")
     LiveData<Restaurant> getById(long id);
+
+    @Query("SELECT * FROM restaurants WHERE cuisine_type = :type ORDER BY id DESC")
+    LiveData<List<Restaurant>> getByType(CuisineType type);
 
     @Query("SELECT COUNT(*) FROM restaurants WHERE name = :name")
     Boolean existByName(String name);
