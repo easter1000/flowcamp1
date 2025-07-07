@@ -78,5 +78,9 @@ public class DBRepository {
         io.execute(() -> restaurantDao.delete(restaurant));
     }
 
+    public LiveData<RestaurantDao.RestaurantWithMenus> getRestaurantWithMenus(long restaurantId) {
+        return restaurantDao.getRestaurantWithMenus(restaurantId);
+    }
+
     public interface InsertCallback { void onInserted(long id); }
 }
