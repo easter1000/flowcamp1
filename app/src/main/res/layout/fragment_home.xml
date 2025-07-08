@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/topBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="15dp"
+        app:tint="@color/yellow_200"
+        android:src="@drawable/ic_long_logo" />
+
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="0dp"
@@ -67,5 +79,35 @@
         tools:listitem="@layout/item_place"
         android:clipToPadding="false"
         android:paddingBottom="?attr/actionBarSize" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/emptyHomeView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+        android:id="@+id/empty_image"
+        android:src="@drawable/ic_empty_res"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:scaleType="centerInside"
+        android:layout_marginBottom="?attr/actionBarSize"/>
+
+        <TextView
+            android:text="등록된 가게가 없습니다"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:textColor="@color/dark_gray"
+            app:layout_constraintTop_toBottomOf="@id/empty_image"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

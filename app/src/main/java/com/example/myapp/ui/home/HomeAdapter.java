@@ -1,6 +1,10 @@
 package com.example.myapp.ui.home;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.util.Log;
 import android.util.TypedValue;
@@ -9,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
@@ -52,7 +57,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
     public void setCurrentLocation(@Nullable Location loc) {
         this.currentLocation = loc;
-        notifyDataSetChanged();          // 거리 갱신
+        notifyDataSetChanged();
     }
 
     @Override
@@ -91,11 +96,12 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
     }
 
     private double distance(Restaurant r) {
-        // TODO: home 주소가 너무 긴것도!
         if (currentLocation == null) return 0;
-        float[] results = new float[1];
-        Location.distanceBetween(currentLocation.getLatitude(),  currentLocation.getLongitude(), r.latitude, r.longitude, results);
-        return results[0];
+        Location restaurantLocation = new Location("restaurant");
+        restaurantLocation.setLatitude(r.latitude);
+        restaurantLocation.setLongitude(r.longitude);
+
+        return currentLocation.distanceTo(restaurantLocation);
     }
 
     private double avgRating(Restaurant r) {
@@ -153,10 +159,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
     }
 
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder {
-        TextView textViewRestaurantName;
-        TextView textViewRestaurantType;
-        TextView textViewRestaurantRating;
-        TextView textViewRestaurantLocation;
+        TextView textViewRestaurantName, textViewRestaurantType, textViewRestaurantRating, textViewRestaurantLocation, textViewDistance;
+        TextView textViewMenuboard, textViewRatingAddressSeparator;
         HorizontalScrollView horizontalScrollViewImages;
         LinearLayout linearLayoutImages;
         Button delBtn, editBtn;
@@ -174,9 +178,13 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             delBtn = itemView.findViewById(R.id.btnDel);
             editBtn = itemView.findViewById(R.id.btnEdit);
             buttonContainer = itemView.findViewById(R.id.buttonContainer);
+            textViewDistance = itemView.findViewById(R.id.distanceTextView);
+            textViewMenuboard = itemView.findViewById(R.id.textViewMenuboard);
+            textViewRatingAddressSeparator = itemView.findViewById(R.id.textViewRatingAddressSeparator);
         }
 
         public void bind(final Restaurant restaurant, final Context context, final HomeAdapter adapter, final List<MenuItem> menuItems) {
+            Log.e("HomeAdapterDebug", "가게이름: " + restaurant.name + ", 메뉴판 URI: " + restaurant.menuBoardUri);
             List<MenuItem> restaurantMenus;
             if (menuItems != null) {
                 restaurantMenus = menuItems.stream()
@@ -187,8 +195,9 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             }
 
             float ratingSum = 0;
-            int ratingCount = restaurantMenus.size();
+            int ratingCount = 0;
             for (MenuItem m : restaurantMenus) {
+                ratingCount++;
                 ratingSum += m.rating;
             }
             float averageRating;
@@ -201,7 +210,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
             textViewRestaurantName.setText(restaurant.name);
             textViewRestaurantType.setText(Converters.fromCuisine(restaurant.cuisineType));
-            textViewRestaurantLocation.setText(restaurant.location);
+            textViewRestaurantLocation.setText(restaurant.detailedLocation.isEmpty()?restaurant.location:restaurant.location + " " + restaurant.detailedLocation);
 
             final int position = getBindingAdapterPosition();
             if (position == RecyclerView.NO_POSITION) {
@@ -233,6 +242,63 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
             delBtn.setOnClickListener(v -> {adapter.deleteClickListener.onDeleteClick(restaurant);});
             editBtn.setOnClickListener(v -> {adapter.editClickListener.onEditClick(restaurant);});
+
+            if (adapter.currentLocation != null) {
+                textViewRatingAddressSeparator.setVisibility(View.VISIBLE);
+                textViewDistance.setVisibility(View.VISIBLE);
+                double distanceInMeters = adapter.distance(restaurant);
+                String distanceText;
+                if (distanceInMeters < 1000) {
+                    distanceText = String.format(Locale.getDefault(), "%.0fm", distanceInMeters);
+                } else {
+                    double distanceInKm = distanceInMeters / 1000.0;
+                    distanceText = String.format(Locale.getDefault(), "%.1fkm", distanceInKm);
+                }
+                textViewDistance.setText(distanceText);
+            } else {
+                textViewRatingAddressSeparator.setVisibility(View.GONE);
+                textViewDistance.setVisibility(View.GONE);
+            }
+
+            if(restaurant.menuBoardUri != null) {
+                textViewMenuboard.setVisibility(View.VISIBLE);
+                textViewMenuboard.setPaintFlags(textViewMenuboard.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+                textViewMenuboard.setOnClickListener(v -> {
+                    showMenuDialog(context, restaurant);
+                });
+            } else {
+                textViewMenuboard.setVisibility(View.GONE);
+            }
+        }
+
+        private void showMenuDialog(Context context, Restaurant r) {
+            LayoutInflater inflater = LayoutInflater.from(context);
+            View dialogView = inflater.inflate(R.layout.item_menuboard, null);
+            ImageView menuboard = dialogView.findViewById(R.id.imageMenuboard);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setView(dialogView);
+
+            final AlertDialog dialog = builder.create();
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+
+            ImageButton closeButton = dialogView.findViewById(R.id.buttonClose);
+            TextView dialogTitle = dialogView.findViewById(R.id.textViewDialogTitle);
+
+            dialogTitle.setText("메뉴판");
+
+            closeButton.setOnClickListener(v -> dialog.dismiss());
+
+            Glide.with(context)
+                    .load(r.menuBoardUri)
+                    .centerCrop()
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.ic_dashboard_black_24dp)
+                    .into(menuboard);
+
+            dialog.show();
         }
 
         private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context, HomeAdapter adapter) {

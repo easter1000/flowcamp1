@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <ImageView
+        android:src="@drawable/ic_empty_res"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="4"
+        android:scaleType="fitCenter"
+        android:layout_marginRight="100dp"
+        android:layout_marginLeft="100dp" />
+
+    <TextView
+        android:text="등록된 가게가 없습니다"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1"
+        android:textSize="16sp"
+        android:textColor="@color/dark_gray"
+        android:gravity="top"/>
+
+</LinearLayout>
