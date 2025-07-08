@@ -1,7 +1,9 @@
 package com.example.myapp.ui.map;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
@@ -23,6 +25,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -35,6 +38,8 @@ import com.example.myapp.data.dao.RestaurantDao;
 import com.example.myapp.data.db.Converters;
 import com.example.myapp.databinding.FragmentMapBinding;
 import com.example.myapp.ui.gallery.AddRestaurantDialogFragment;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -53,6 +58,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private FragmentMapBinding binding;
     private MapViewModel mapViewModel;
     private GoogleMap googleMap;
+    private FusedLocationProviderClient fusedLocationClient;
     private CardView cardPlaceInfo;
     private TextView restaurantName;
     private TextView restaurantType;
@@ -137,6 +143,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         this.googleMap = googleMap;
         this.googleMap.setOnMarkerClickListener(this::onMarkerClick);
         this.googleMap.setOnMapClickListener(this::onEmptySpaceClick);
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+            this.googleMap.setMyLocationEnabled(true);
+            this.googleMap.setOnMyLocationButtonClickListener(this::onMyLocationButtonClick);
+        }
         observeViewModel();
     }
 
@@ -195,20 +207,34 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         if (tag instanceof Long) {
             long restaurantId = (Long) tag;
-            Log.d("MapFragment", "onMarkerClick: " + restaurantId);
+            //Log.d("MapFragment", "onMarkerClick: " + restaurantId);
             mapViewModel.getRestaurantWithMenus(restaurantId).observe(getViewLifecycleOwner(), r -> {
                 if (r != null) {
                     showPlaceInfoCard(r);
                     googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
                 }
                 else {
-                    Log.d("MapFragment", "onMarkerClick: r is null");
+                    //Log.d("MapFragment", "onMarkerClick: r is null");
                     cardPlaceInfo.setVisibility(View.GONE);
                 }
             });
         } else {
             return false;
         }
+        return true;
+    }
+
+    public boolean onMyLocationButtonClick() {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+            if (location != null) {
+                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+            }
+        });
         return true;
     }
 
@@ -226,7 +252,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             averageRating = ratingSum / ratingCount;
             restaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
         } else {
-            restaurantRating.setText("⭐ N/A");
+            restaurantRating.setText("⭐");
         }
 
         restaurantName.setText(restaurant.name);
