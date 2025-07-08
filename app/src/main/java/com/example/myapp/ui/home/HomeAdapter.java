@@ -205,7 +205,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
                 averageRating = ratingSum / ratingCount;
                 textViewRestaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
             } else {
-                textViewRestaurantRating.setText("⭐ N/A");
+                textViewRestaurantRating.setText("⭐");
             }
 
             textViewRestaurantName.setText(restaurant.name);
@@ -304,8 +304,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context, HomeAdapter adapter) {
             imageContainer.removeAllViews();
 
-            final int IMAGE_SIZE_DP = 120;
-            final int MARGIN_RIGHT_DP = 8;
+            final int IMAGE_SIZE_DP = 110;
+            final int MARGIN_RIGHT_DP = 2;
 
             int imageSizeInPx = (int) TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP, IMAGE_SIZE_DP, context.getResources().getDisplayMetrics());

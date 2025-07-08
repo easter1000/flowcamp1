@@ -268,8 +268,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context) {
         imageContainer.removeAllViews();
 
-        final int IMAGE_SIZE_DP = 120;
-        final int MARGIN_RIGHT_DP = 8;
+        final int IMAGE_SIZE_DP = 110;
+        final int MARGIN_RIGHT_DP = 2;
 
         int imageSizeInPx = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, IMAGE_SIZE_DP, context.getResources().getDisplayMetrics());
