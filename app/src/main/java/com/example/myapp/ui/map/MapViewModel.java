@@ -1,19 +1,43 @@
 package com.example.myapp.ui.map;
 
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.Transformations;
 
-public class MapViewModel extends ViewModel {
+import com.example.myapp.data.CuisineType;
+import com.example.myapp.data.Restaurant;
+import com.example.myapp.data.dao.RestaurantDao;
+import com.example.myapp.ui.DBRepository;
 
-    private final MutableLiveData<String> mText;
+import java.util.List;
 
-    public MapViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is map fragment");
+public class MapViewModel extends AndroidViewModel {
+
+    private final DBRepository repo;
+    private final LiveData<List<Restaurant>> restaurants;
+    private final MutableLiveData<CuisineType> filterType = new MutableLiveData<>();
+
+    public MapViewModel(@NonNull Application app) {
+        super(app);
+        repo = new DBRepository(app);
+        restaurants = Transformations.switchMap(filterType, repo::getRestaurantByType);
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    public LiveData<List<Restaurant>> getRestaurants() { return restaurants; }
+
+    public LiveData<RestaurantDao.RestaurantWithMenus> getRestaurantWithMenus(long restaurantId) {
+        return repo.getRestaurantWithMenus(restaurantId);
+    }
+
+    public void setFilter(CuisineType type) {
+        filterType.setValue(type);
+    }
+
+    public void deleteRestaurant(Restaurant restaurant) {
+        repo.deleteRestaurant(restaurant);
     }
 }

@@ -8,5 +8,6 @@ public enum SortOrder {
     NAME_DESC,
     NAME_ASC,
     PRICE_DESC,
-    PRICE_ASC;
+    PRICE_ASC,
+    DISTANCE_ASC;
 }

@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.room)
     implementation(libs.google.maps.services)
+    implementation(libs.google.maps.places)
     annotationProcessor(libs.glide)
     annotationProcessor(libs.room.compiler)
     testImplementation(libs.junit)

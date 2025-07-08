@@ -8,6 +8,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Relation;
 import androidx.room.Transaction;
+import androidx.room.Update;
 
 import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.MenuItem;
@@ -34,11 +35,14 @@ public interface RestaurantDao {
     @Delete
     void delete(Restaurant restaurant);
 
+    @Update
+    void update(Restaurant restaurant);
+
     @Query("SELECT * FROM restaurants ORDER BY name")
     LiveData<List<Restaurant>> getAll();
 
     @Transaction
-    @Query("SELECT * FROM restaurants NATURAL INNER JOIN menu_items WHERE id = :restaurantId")
+    @Query("SELECT * FROM restaurants LEFT OUTER JOIN menu_items ON restaurants.id = menu_items.restaurant_id WHERE restaurants.id = :restaurantId")
     LiveData<RestaurantWithMenus> getRestaurantWithMenus(long restaurantId);
 
     @Transaction

@@ -69,6 +69,9 @@ public class DBRepository {
     public void updateMenu(MenuItem item) {
         io.execute(() -> menuItemDao.update(item));
     }
+    public void updateRestaurant(Restaurant restaurant) {
+        io.execute(() -> restaurantDao.update(restaurant));
+    }
 
     public void deleteMenuById(long menuId) {
         io.execute(() -> menuItemDao.deleteById(menuId));
@@ -76,6 +79,10 @@ public class DBRepository {
 
     public void deleteRestaurant(Restaurant restaurant) {
         io.execute(() -> restaurantDao.delete(restaurant));
+    }
+
+    public LiveData<RestaurantDao.RestaurantWithMenus> getRestaurantWithMenus(long restaurantId) {
+        return restaurantDao.getRestaurantWithMenus(restaurantId);
     }
 
     public interface InsertCallback { void onInserted(long id); }

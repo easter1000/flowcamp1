@@ -3,10 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/gallery_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:id="@+id/topBar"
@@ -42,7 +42,7 @@
             android:contentDescription="@null"
             android:adjustViewBounds="true"
             android:scaleType="centerInside"
-            android:padding="4dp"/>
+            android:padding="2dp"/>
 
         <ImageButton
             android:id="@+id/btn_add"
@@ -71,13 +71,17 @@
         android:id="@+id/recycler_gallery"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="4dp"
+        android:paddingTop="4dp"
+        android:paddingRight="4dp"
+        android:paddingLeft="4dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="4"
         app:layout_constraintTop_toBottomOf="@id/topBar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_gallery_image"/>
+        tools:listitem="@layout/item_gallery_image"
+        android:clipToPadding="false"
+        android:paddingBottom="?attr/actionBarSize" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

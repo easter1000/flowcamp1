@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment">
+    tools:context=".ui.home.HomeFragment"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:id="@+id/topBar"
@@ -62,6 +63,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_place" />
+        tools:listitem="@layout/item_place"
+        android:clipToPadding="false"
+        android:paddingBottom="?attr/actionBarSize" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

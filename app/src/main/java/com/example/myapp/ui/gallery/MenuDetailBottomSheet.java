@@ -21,17 +21,16 @@ import com.example.myapp.data.Restaurant;
 import com.example.myapp.ui.DBRepository;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import java.util.Objects;
+
 public class MenuDetailBottomSheet extends BottomSheetDialogFragment {
 
     private static final String ARG_MENU_ID = "menu_id";
     private DBRepository repo;
 
     private ImageView mdImg;
-    private TextView mdName;
+    private TextView mdName, mdReview, mdRestName, mdLocation, mdPrice;
     private RatingBar mdRating;
-    private TextView mdReview;
-    private TextView mdRestName;
-    private TextView mdLocation;
 
     private long menuId = -1;
 
@@ -58,6 +57,7 @@ public class MenuDetailBottomSheet extends BottomSheetDialogFragment {
         mdReview = v.findViewById(R.id.md_review);
         mdRestName = v.findViewById(R.id.md_res);
         mdLocation = v.findViewById(R.id.md_location);
+        mdPrice = v.findViewById(R.id.md_price);
 
         Button btnEdit = v.findViewById(R.id.btn_edit);
         Button btnDelete = v.findViewById(R.id.btn_delete);
@@ -124,7 +124,12 @@ public class MenuDetailBottomSheet extends BottomSheetDialogFragment {
                 .into(mdImg);
         mdName.setText(m.menuName);
         mdRating.setRating(m.rating);
-        mdReview.setText(m.review);
+        if(Objects.equals(m.review, "")) {
+            mdReview.setText("평가가 없습니다.");
+        } else {
+            mdReview.setText(m.review);
+        }
+        mdPrice.setText(String.format("%d원", m.price));
     }
 
     private void bindRestaurant(@Nullable Restaurant r) {
