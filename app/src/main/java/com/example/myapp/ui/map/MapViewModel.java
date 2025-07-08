@@ -24,7 +24,7 @@ public class MapViewModel extends AndroidViewModel {
     public MapViewModel(@NonNull Application app) {
         super(app);
         repo = new DBRepository(app);
-        restaurants = repo.getAllRestaurants();
+        restaurants = Transformations.switchMap(filterType, repo::getRestaurantByType);
     }
 
     public LiveData<List<Restaurant>> getRestaurants() { return restaurants; }

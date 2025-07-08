@@ -8,11 +8,15 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +28,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.myapp.R;
+import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
 import com.example.myapp.data.dao.RestaurantDao;
@@ -73,6 +78,39 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState);
         //observeViewModel();
 
+        Spinner spinner = view.findViewById(R.id.spinner_filter);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                CuisineType.getDisplayNames(true)
+        );
+        spinnerAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                CuisineType selectedType = CuisineType.values()[pos];
+                mapViewModel.setFilter(selectedType);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        spinner.post(() -> {
+            spinner.setDropDownWidth(spinner.getWidth());
+            spinner.setDropDownHorizontalOffset(0);
+            spinner.setDropDownVerticalOffset(spinner.getHeight() + 20);
+        });
+
+        ImageButton btnAdd = view.findViewById(R.id.btn_add);
+        btnAdd.setOnClickListener(v -> {
+            AddRestaurantDialogFragment dialogFragment = AddRestaurantDialogFragment.newInstanceForCreate("");
+            dialogFragment.show(getParentFragmentManager(), "AddRestaurantDialog");
+        });
+
         if (binding != null) {
             cardPlaceInfo = binding.cardPlaceInfoContainer;
             restaurantName = cardPlaceInfo.findViewById(R.id.textViewPlaceName);
@@ -112,6 +150,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     public void displayMarkers(List<Restaurant> restaurants) {
         this.googleMap.clear();
+        cardPlaceInfo.setVisibility(View.GONE);
 
         if (restaurants.isEmpty()) {
             return;
@@ -119,20 +158,25 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-        for (int i = 0; i < restaurants.size(); i++) {
-            Restaurant restaurant = restaurants.get(i);
-            LatLng latLng = new LatLng(1 + i, 1 + i);
-            builder.include(latLng);
-            Marker marker = googleMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(1 + i, 1 + i))
-                    .icon(BitmapDescriptorFactory.defaultMarker(40)));
-            if (marker != null) {
-                marker.setTag(restaurant.id);
+        for (Restaurant restaurant : restaurants) {
+            double lat = restaurant.latitude;
+            double lng = restaurant.longitude;
+            if (lat != 0 && lng != 0) {
+                LatLng latLng = new LatLng(lat, lng);
+                builder.include(latLng);
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(latLng)
+                        .icon(BitmapDescriptorFactory.defaultMarker(40)));
+                if (marker != null) {
+                    marker.setTag(restaurant.id);
+                }
             }
         }
 
         if (restaurants.size() == 1) {
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(1, 1), 15));
+            double lat = restaurants.get(0).latitude;
+            double lng = restaurants.get(0).longitude;
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 15));
         } else {
             LatLngBounds bounds = builder.build();
             int padding = 100; // 지도의 가장자리로부터의 여백 (픽셀 단위)
@@ -151,12 +195,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         if (tag instanceof Long) {
             long restaurantId = (Long) tag;
+            Log.d("MapFragment", "onMarkerClick: " + restaurantId);
             mapViewModel.getRestaurantWithMenus(restaurantId).observe(getViewLifecycleOwner(), r -> {
                 if (r != null) {
                     showPlaceInfoCard(r);
-                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
                 }
                 else {
+                    Log.d("MapFragment", "onMarkerClick: r is null");
                     cardPlaceInfo.setVisibility(View.GONE);
                 }
             });
