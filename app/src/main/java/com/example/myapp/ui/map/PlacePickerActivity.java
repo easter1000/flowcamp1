@@ -28,6 +28,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
@@ -61,10 +62,17 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
     private TextView tvPlaceCategory;
     private ImageButton btnCloseCard;
 
+    private LatLng initialLatLng = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_placepicker);
+
+        Bundle ex = getIntent().getExtras();
+        if (ex != null && ex.containsKey("init_lat") && ex.containsKey("init_lng")) {
+            initialLatLng = new LatLng(ex.getDouble("init_lat"), ex.getDouble("init_lng"));
+        }
 
         placesClient = Places.createClient(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -105,6 +113,7 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
                 hidePlaceInfoCard();
                 selectedPlace = place;
                 updateMapWithPlace(place);
+                showPlaceInfoCard(place);
                 btnSelectLocation.setEnabled(true);
             }
 
@@ -139,8 +148,25 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+
+        try {
+            boolean success = mMap.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            this, R.raw.map_style));
+
+            if (!success) {
+                Log.e("MapPlacePicker", "Style parsing failed.");
+            }
+        } catch (Exception e) {
+            Log.e("MapPlacePicker", "Can't find style. Error: ", e);
+        }
+
         updateLocationUI();
-        getDeviceLocation();
+        if (initialLatLng != null) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLatLng, 15));
+        } else {
+            getDeviceLocation();
+        }
 
         mMap.setOnMapClickListener(this::handleMapClick);
 

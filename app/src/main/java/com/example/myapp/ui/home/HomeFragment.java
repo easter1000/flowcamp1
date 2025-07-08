@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapp.R;
 import com.example.myapp.data.CuisineType;
@@ -38,6 +39,8 @@ import com.google.android.material.divider.MaterialDividerItemDecoration;
 import com.example.myapp.databinding.FragmentHomeBinding;
 import com.example.myapp.data.Restaurant;
 
+import java.util.List;
+
 public class HomeFragment extends Fragment implements
         HomeAdapter.OnImageClickListener,
         HomeAdapter.OnDeleteClickListener,
@@ -50,6 +53,8 @@ public class HomeFragment extends Fragment implements
     private int selectedSortIndex = 0;
     private FusedLocationProviderClient fused;
     private ActivityResultLauncher<String> requestPerm;
+    private RecyclerView recyclerView;
+    private View emptyHomeView;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -73,8 +78,13 @@ public class HomeFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        recyclerView = binding.recyclerViewPlaces;
+        emptyHomeView = view.findViewById(R.id.emptyHomeView);
+
         setupRecyclerView();
         observeViewModel();
+        toggleVisibility();
 
         Spinner spinner = view.findViewById(R.id.spinner_filter);
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
@@ -145,6 +155,17 @@ public class HomeFragment extends Fragment implements
         checkLocationPermission();
     }
 
+    private void toggleVisibility() {
+        List<Restaurant> list = homeViewModel.getRestaurants().getValue();
+        if (list == null || list.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            emptyHomeView.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyHomeView.setVisibility(View.GONE);
+        }
+    }
+
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -163,8 +184,8 @@ public class HomeFragment extends Fragment implements
 
     private void setupRecyclerView(){
         homeAdapter = new HomeAdapter(requireContext());
-        binding.recyclerViewPlaces.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.recyclerViewPlaces.setAdapter(homeAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(homeAdapter);
         homeAdapter.setOnImageClickListener(this);
         homeAdapter.setOnDeleteClickListener(this);
         homeAdapter.setOnEditClickListener(this);
@@ -173,7 +194,7 @@ public class HomeFragment extends Fragment implements
         divider.setDividerInsetStart(32);
         divider.setDividerInsetEnd(32);
         divider.setLastItemDecorated(false);
-        binding.recyclerViewPlaces.addItemDecoration(divider);
+        recyclerView.addItemDecoration(divider);
     }
 
     @Override
@@ -207,12 +228,14 @@ public class HomeFragment extends Fragment implements
             if (homeAdapter != null && restaurants != null) {
                 homeAdapter.setRestaurants(restaurants);
             }
+            toggleVisibility();
         });
 
         homeViewModel.getMenuItems().observe(getViewLifecycleOwner(), menuItems -> {
             if (homeAdapter != null && menuItems != null) {
                 homeAdapter.setMenuItems(menuItems);
             }
+            toggleVisibility();
         });
     }
 

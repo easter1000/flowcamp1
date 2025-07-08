@@ -14,7 +14,7 @@ import com.example.myapp.data.Restaurant;
 
 @Database(
         entities = {Restaurant.class, MenuItem.class},
-        version = 4,
+        version = 5,
         exportSchema = false
 )
 @TypeConverters(Converters.class)
