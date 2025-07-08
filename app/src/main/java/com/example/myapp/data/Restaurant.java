@@ -23,4 +23,10 @@ public class Restaurant {
 
     @ColumnInfo(name="cuisine_type")
     public CuisineType cuisineType;
+
+    @ColumnInfo(name="latitude")
+    public double latitude;
+
+    @ColumnInfo(name="longitude")
+    public double longitude;
 }

@@ -16,8 +16,33 @@
         <item name="myTextColorSecondary">@color/gray</item>
     </style>
     <style name="RatingBar" parent="Widget.AppCompat.RatingBar.Small">
-        <item name="android:progressTint">#FFD700</item>
-        <item name="android:progressBackgroundTint">#D3D3D3</item>
-        <item name="android:secondaryProgressTint">#FFD700</item>
+        <item name="android:progressTint">@color/yellow_200</item>
+        <item name="android:progressBackgroundTint">@color/gray</item>
+        <item name="android:secondaryProgressTint">@color/yellow_200</item>
+    </style>
+
+    <style name="Button.Activated" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:background">@drawable/btn_activated</item>
+        <item name="android:textColor">@color/yellow_200</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="backgroundTint">@null</item>
+    </style>
+
+    <style name="Button.Deactivated" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:background">@drawable/btn_deactivated</item>
+        <item name="android:textColor">@color/gray</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="backgroundTint">@null</item>
+    </style>
+
+    <style name="CustomButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:background">@drawable/btn_selector</item>
+        <item name="android:textColor">@drawable/btn_color_selector</item>
+
+        <item name="backgroundTint">@null</item>
+        <item name="android:textStyle">bold</item>
+        <item name="strokeWidth">0dp</item>
     </style>
 </resources>

@@ -8,6 +8,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Relation;
 import androidx.room.Transaction;
+import androidx.room.Update;
 
 import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.MenuItem;
@@ -33,6 +34,9 @@ public interface RestaurantDao {
 
     @Delete
     void delete(Restaurant restaurant);
+
+    @Update
+    void update(Restaurant restaurant);
 
     @Query("SELECT * FROM restaurants ORDER BY name")
     LiveData<List<Restaurant>> getAll();
