@@ -4,6 +4,10 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.ColorDrawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
@@ -59,11 +63,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private MapViewModel mapViewModel;
     private GoogleMap googleMap;
     private FusedLocationProviderClient fusedLocationClient;
+    private Location currentLocation;
     private CardView cardPlaceInfo;
     private TextView restaurantName;
     private TextView restaurantType;
     private TextView restaurantRating;
     private TextView restaurantLocation;
+    private TextView distanceTextView;
+    private TextView ratingAddressSeparatorTextView;
+    private TextView showMenuboardTextView;
     HorizontalScrollView horizontalScrollViewImages;
     LinearLayout expandableContainer;
     LinearLayout linearLayoutImages;
@@ -108,7 +116,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         spinner.post(() -> {
             spinner.setDropDownWidth(spinner.getWidth());
             spinner.setDropDownHorizontalOffset(0);
-            spinner.setDropDownVerticalOffset(spinner.getHeight() + 20);
+            spinner.setDropDownVerticalOffset(spinner.getHeight());
         });
 
         ImageButton btnAdd = view.findViewById(R.id.btn_add);
@@ -128,15 +136,30 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             linearLayoutImages = cardPlaceInfo.findViewById(R.id.linearLayoutImages);
             delBtn = cardPlaceInfo.findViewById(R.id.btnDel);
             editBtn = cardPlaceInfo.findViewById(R.id.btnEdit);
+            distanceTextView = cardPlaceInfo.findViewById(R.id.distanceTextView);
+            ratingAddressSeparatorTextView = cardPlaceInfo.findViewById(R.id.textViewRatingAddressSeparator);
+            showMenuboardTextView = cardPlaceInfo.findViewById(R.id.textViewMenuboard);
         }
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this); // OnMapReadyCallback을 현재 클래스로 설정
+            loadCurrentLocation();
         }
 
     }
 
+    private void loadCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+            fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
+                if (location != null) {
+                    currentLocation = location;
+                }
+            });
+        }
+    }
     // Get a handle to the GoogleMap object and display marker.
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -252,7 +275,34 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             averageRating = ratingSum / ratingCount;
             restaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
         } else {
-            restaurantRating.setText("⭐");
+            restaurantRating.setText("⭐ N/A");
+        }
+
+        if (currentLocation != null) {
+            ratingAddressSeparatorTextView.setVisibility(View.VISIBLE);
+            distanceTextView.setVisibility(View.VISIBLE);
+            double distanceInMeters = distance(restaurant);
+            String distanceText;
+            if (distanceInMeters < 1000) {
+                distanceText = String.format(Locale.getDefault(), "%.0fm", distanceInMeters);
+            } else {
+                double distanceInKm = distanceInMeters / 1000.0;
+                distanceText = String.format(Locale.getDefault(), "%.1fkm", distanceInKm);
+            }
+            distanceTextView.setText(distanceText);
+        } else {
+            ratingAddressSeparatorTextView.setVisibility(View.GONE);
+            distanceTextView.setVisibility(View.GONE);
+        }
+
+        if(restaurant.menuBoardUri != null) {
+            showMenuboardTextView.setVisibility(View.VISIBLE);
+            showMenuboardTextView.setPaintFlags(showMenuboardTextView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+            showMenuboardTextView.setOnClickListener(v -> {
+                showMenuDialog(requireContext(), restaurant);
+            });
+        } else {
+            showMenuboardTextView.setVisibility(View.GONE);
         }
 
         restaurantName.setText(restaurant.name);
@@ -263,6 +313,45 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         delBtn.setOnClickListener(v -> onDeleteClick(restaurant));
         editBtn.setOnClickListener(v -> onEditClick(restaurant));
         cardPlaceInfo.setVisibility(View.VISIBLE);
+    }
+
+    private void showMenuDialog(Context context, Restaurant r) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.item_menuboard, null);
+        ImageView menuboard = dialogView.findViewById(R.id.imageMenuboard);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(dialogView);
+
+        final AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        ImageButton closeButton = dialogView.findViewById(R.id.buttonClose);
+        TextView dialogTitle = dialogView.findViewById(R.id.textViewDialogTitle);
+
+        dialogTitle.setText("메뉴판");
+
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+
+        Glide.with(context)
+                .load(r.menuBoardUri)
+                .centerCrop()
+                .placeholder(R.drawable.placeholder)
+                .error(R.drawable.ic_dashboard_black_24dp)
+                .into(menuboard);
+
+        dialog.show();
+    }
+
+    private double distance(Restaurant r) {
+        if (currentLocation == null) return 0;
+        Location restaurantLocation = new Location("restaurant");
+        restaurantLocation.setLatitude(r.latitude);
+        restaurantLocation.setLongitude(r.longitude);
+
+        return currentLocation.distanceTo(restaurantLocation);
     }
 
     private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context) {
