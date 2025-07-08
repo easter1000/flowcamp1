@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment"
-    android:fitsSystemWindows="true">
+    tools:context=".ui.home.HomeFragment">
 
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:orientation="horizontal"
+        android:layout_marginTop="24dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:gravity="center_vertical"
