@@ -17,7 +17,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -45,7 +44,7 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        observeViewModel();
+        //observeViewModel();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
@@ -59,6 +58,7 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback {
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.googleMap = googleMap;
         this.googleMap.setOnMarkerClickListener(this::onMarkerClick);
+        observeViewModel();
     }
 
     public void observeViewModel() {
@@ -84,7 +84,7 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback {
             builder.include(latLng);
             Marker marker = googleMap.addMarker(new MarkerOptions()
                     .position(new LatLng(1 + i, 1 + i))
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_spoon_stroke_35)));
+                    .icon(BitmapDescriptorFactory.defaultMarker(40)));
             if (marker != null) {
                 marker.setTag(restaurant.id);
             }
