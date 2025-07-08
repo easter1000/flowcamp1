@@ -1,11 +1,13 @@
 package com.example.myapp.ui.home;
 
 import android.content.Context;
+import android.location.Location;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -13,10 +15,12 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myapp.R;
+import com.example.myapp.animations.AnimationUtils;
 import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
 import com.example.myapp.data.SortOrder;
@@ -36,16 +40,30 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
     private final Context context;
     private List<Restaurant> restaurants;
     private List<MenuItem> menuItems;
-    private final Set<Integer> openedItems = new HashSet<>();
+    private final Set<Long> openedItems = new HashSet<>();
     private SortOrder sortOrder = SortOrder.DATE_DESC;
+    private Location currentLocation;
 
     public HomeAdapter(Context context) {
         this.context = context;
         this.restaurants = new ArrayList<>();
+        setHasStableIds(true);
+    }
+
+    public void setCurrentLocation(@Nullable Location loc) {
+        this.currentLocation = loc;
+        notifyDataSetChanged();          // 거리 갱신
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return restaurants.get(position).id;
     }
 
     public void setRestaurants(List<Restaurant> restaurants) {
         this.restaurants = restaurants;
+        Set<Long> existingIds = restaurants.stream().map(r -> r.id).collect(Collectors.toSet());
+        openedItems.retainAll(existingIds);
         sort(sortOrder);
     }
 
@@ -62,13 +80,22 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         switch (order) {
             case NAME_ASC: comp = Comparator.comparing(r -> r.name.toLowerCase()); break;
             case NAME_DESC: comp = Comparator.comparing((Restaurant r) -> r.name.toLowerCase()).reversed(); break;
+            case DISTANCE_ASC: comp = Comparator.comparingDouble(this::distance); break;
             case RATING_ASC: comp = Comparator.comparingDouble(this::avgRating); break;
             case RATING_DESC: comp = Comparator.comparingDouble(this::avgRating).reversed(); break;
             case DATE_ASC: comp = Comparator.comparingLong(r -> r.id); break;
-            default: comp = Comparator.comparingLong((Restaurant r) -> r.id).reversed();
+            case DATE_DESC: default: comp = Comparator.comparingLong((Restaurant r) -> r.id).reversed();
         }
         Collections.sort(restaurants, comp);
         notifyDataSetChanged();
+    }
+
+    private double distance(Restaurant r) {
+        // TODO: home 주소가 너무 긴것도!
+        if (currentLocation == null) return 0;
+        float[] results = new float[1];
+        Location.distanceBetween(currentLocation.getLatitude(),  currentLocation.getLongitude(), r.latitude, r.longitude, results);
+        return results[0];
     }
 
     private double avgRating(Restaurant r) {
@@ -86,8 +113,13 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         void onDeleteClick(Restaurant restaurant);
     }
 
+    public interface OnEditClickListener {
+        void onEditClick(Restaurant restaurant);
+    }
+
     private OnImageClickListener imageClickListener;
     private OnDeleteClickListener deleteClickListener;
+    private OnEditClickListener editClickListener;
 
     public void setOnImageClickListener(OnImageClickListener listener) {
         this.imageClickListener = listener;
@@ -95,6 +127,10 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
     public void setOnDeleteClickListener(OnDeleteClickListener listener) {
         this.deleteClickListener = listener;
+    }
+
+    public void setOnEditClickListener(OnEditClickListener listener) {
+        this.editClickListener = listener;
     }
 
     @NonNull
@@ -123,7 +159,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         TextView textViewRestaurantLocation;
         HorizontalScrollView horizontalScrollViewImages;
         LinearLayout linearLayoutImages;
-        ImageView delBtn;
+        Button delBtn, editBtn;
+        LinearLayout buttonContainer, expandableContainer;
 
         public RestaurantViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -133,15 +170,20 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             textViewRestaurantLocation = itemView.findViewById(R.id.textViewPlaceAddress);
             horizontalScrollViewImages = itemView.findViewById(R.id.horizontalScrollViewImages);
             linearLayoutImages = itemView.findViewById(R.id.linearLayoutImages);
-            delBtn = itemView.findViewById(R.id.del_btn);
+            expandableContainer = itemView.findViewById(R.id.expandableContainer);
+            delBtn = itemView.findViewById(R.id.btnDel);
+            editBtn = itemView.findViewById(R.id.btnEdit);
+            buttonContainer = itemView.findViewById(R.id.buttonContainer);
         }
 
         public void bind(final Restaurant restaurant, final Context context, final HomeAdapter adapter, final List<MenuItem> menuItems) {
-            List<MenuItem> restaurantMenus = new ArrayList<>();
+            List<MenuItem> restaurantMenus;
             if (menuItems != null) {
                 restaurantMenus = menuItems.stream()
                         .filter(m -> m.restaurantId == restaurant.id)
                         .collect(Collectors.toList());
+            } else {
+                restaurantMenus = new ArrayList<>();
             }
 
             float ratingSum = 0;
@@ -166,36 +208,31 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
                 return;
             }
 
-            final boolean isOpened = adapter.openedItems.contains(position);
-            horizontalScrollViewImages.setVisibility(isOpened ? View.VISIBLE : View.GONE);
+            final boolean isOpened = adapter.openedItems.contains(restaurant.id);
 
             if (isOpened) {
+                expandableContainer.setVisibility(View.VISIBLE);
                 populateImages(restaurantMenus, linearLayoutImages, context, adapter);
             } else {
+                expandableContainer.setVisibility(View.GONE);
                 linearLayoutImages.removeAllViews();
             }
 
             itemView.setOnClickListener(v -> {
-                int clickedPosition = getBindingAdapterPosition();
-                if (clickedPosition == RecyclerView.NO_POSITION) return;
+                if (getBindingAdapterPosition() == RecyclerView.NO_POSITION) return;
 
-                if (adapter.openedItems.contains(clickedPosition)) {
-                    adapter.openedItems.remove(clickedPosition);
+                if (adapter.openedItems.contains(restaurant.id)) {
+                    AnimationUtils.collapse(expandableContainer);
+                    adapter.openedItems.remove(restaurant.id);
                 } else {
-                    adapter.openedItems.add(clickedPosition);
-                }
-
-                adapter.notifyItemChanged(clickedPosition);
-            });
-
-            delBtn.setOnClickListener(v -> {
-                Log.d("HomeAdapter", "Delete button clicked for: " + restaurant.name);
-                if (adapter.deleteClickListener != null) {
-                    adapter.deleteClickListener.onDeleteClick(restaurant);
-                } else {
-                    Log.e("HomeAdapter", "DeleteClickListener is NULL!");
+                    populateImages(restaurantMenus, linearLayoutImages, context, adapter);
+                    AnimationUtils.expand(expandableContainer);
+                    adapter.openedItems.add(restaurant.id);
                 }
             });
+
+            delBtn.setOnClickListener(v -> {adapter.deleteClickListener.onDeleteClick(restaurant);});
+            editBtn.setOnClickListener(v -> {adapter.editClickListener.onEditClick(restaurant);});
         }
 
         private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context, HomeAdapter adapter) {

@@ -1,6 +1,7 @@
 package com.example.myapp.ui.gallery;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -93,18 +95,22 @@ public class AddMenuDialogFragment extends DialogFragment {
         initializeViews(v);
 
         setupRestaurantAutoComplete(restaurantEt, repo);
+        Glide.with(this)
+                .load(imageUri)
+                .centerCrop()
+                .placeholder(R.drawable.placeholder)
+                .error(R.drawable.placeholder)
+                .into(imageView);
 
         if (menuId != -1) {
             loadMenuDataForEdit();
-        } else {
-            Glide.with(this).load(imageUri).centerCrop().into(imageView);
         }
 
         View customTitleView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_custom_title, null);
         TextView titleTextView = customTitleView.findViewById(R.id.dialog_title_text);
         ImageView backBtn = customTitleView.findViewById(R.id.dialog_title_back);
 
-        titleTextView.setText(menuId != -1 ? "메뉴 정보 수정" : "메뉴 추가");
+        titleTextView.setText(menuId != -1 ? "메뉴 수정" : "메뉴 추가");
         backBtn.setOnClickListener(view -> dismiss());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
@@ -189,14 +195,11 @@ public class AddMenuDialogFragment extends DialogFragment {
             }
             currentMenu = menu;
             imageUri = menu.imageUri;
-
-            Glide.with(this).load(menu.imageUri).centerCrop().into(imageView);
             menuNameEt.setText(menu.menuName);
             reviewEt.setText(menu.review);
             priceEt.setText(String.valueOf(menu.price));
             ratingBar.setRating(menu.rating);
 
-            menuNameEt.setEnabled(false);
             restaurantEt.setEnabled(false);
 
             repo.getRestaurantById(menu.restaurantId).observe(this, restaurant -> {
@@ -209,6 +212,12 @@ public class AddMenuDialogFragment extends DialogFragment {
     }
 
     private void saveMenu() {
+        View currentFocus = requireDialog().getCurrentFocus();
+        if (currentFocus != null) {
+            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
+        }
+
         if (!checkFields()) return;
 
         if (menuId != -1) {
@@ -231,7 +240,7 @@ public class AddMenuDialogFragment extends DialogFragment {
                         .setMessage("“" + restName + "”은(는) 등록되지 않은 가게입니다.\n새로 생성하시겠습니까?")
                         .setPositiveButton("예", (d, w) -> {
                             AddRestaurantDialogFragment newRestaurantDialog =
-                                    AddRestaurantDialogFragment.newInstance(restName);
+                                    AddRestaurantDialogFragment.newInstanceForCreate(restName);
                             newRestaurantDialog.show(getParentFragmentManager(), "AddNewRestaurantDialog");
                         })
                         .setNegativeButton("아니오", null)

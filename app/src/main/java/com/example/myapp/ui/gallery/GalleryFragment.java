@@ -46,7 +46,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
     private RecyclerView recyclerView;
     private GalleryAdapter adapter;
     private CuisineType current = CuisineType.ALL;
-    private int selectedSortIndex = 7;
+    private int selectedSortIndex = 0;
 
     @Nullable
     @Override
@@ -90,7 +90,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
             pickMediaLauncher.launch(i);
         });
         btnSort.setOnClickListener(v -> {
-            final String[] items = {"이름 A-Z", "이름 Z-A", "평점 높은순", "평점 낮은순", "가격 높은순", "가격 낮은순", "오래된순", "최신순"};
+            final String[] items = {"최신순", "오래된순", "이름 A-Z", "이름 Z-A", "별점 높은순", "별점 낮은순", "가격 높은순", "가격 낮은순"};
 
             final CharSequence[] styledItems = new CharSequence[items.length];
             for (int i = 0; i < items.length; i++) {
@@ -105,17 +105,16 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                     .setTitle("정렬 기준")
                     .setItems(styledItems, (dialog, which) -> {
                         selectedSortIndex = which;
-
                         SortOrder order;
                         switch (which) {
-                            case 0: order = SortOrder.NAME_ASC; break;
-                            case 1: order = SortOrder.NAME_DESC; break;
-                            case 2: order = SortOrder.RATING_ASC; break;
-                            case 3: order = SortOrder.RATING_DESC; break;
-                            case 4: order = SortOrder.PRICE_ASC; break;
-                            case 5: order = SortOrder.PRICE_DESC; break;
-                            case 6: order = SortOrder.DATE_ASC; break;
-                            case 7: default: order = SortOrder.DATE_DESC;
+                            case 0: order = SortOrder.DATE_DESC; break;
+                            case 1: order = SortOrder.DATE_ASC; break;
+                            case 2: order = SortOrder.NAME_ASC; break;
+                            case 3: order = SortOrder.NAME_DESC; break;
+                            case 4: order = SortOrder.RATING_DESC; break;
+                            case 5: order = SortOrder.RATING_ASC; break;
+                            case 6: order = SortOrder.PRICE_DESC; break;
+                            case 7: default: order = SortOrder.PRICE_ASC;
                         }
                         adapter.sort(order);
                     })
@@ -202,14 +201,14 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
             if (data == null) return;
             Comparator<MenuItem> comp;
             switch (order) {
-                case NAME_ASC:   comp = Comparator.comparing(m -> m.menuName.toLowerCase()); break;
-                case NAME_DESC:  comp = Comparator.comparing((MenuItem m) -> m.menuName.toLowerCase()).reversed(); break;
+                case NAME_ASC: comp = Comparator.comparing(m -> m.menuName.toLowerCase()); break;
+                case NAME_DESC: comp = Comparator.comparing((MenuItem m) -> m.menuName.toLowerCase()).reversed(); break;
                 case RATING_ASC: comp = Comparator.comparingDouble(m -> m.rating); break;
                 case RATING_DESC:comp = Comparator.comparingDouble((MenuItem m) -> m.rating).reversed(); break;
-                case PRICE_ASC:  comp = Comparator.comparingInt(m -> m.price); break;
+                case PRICE_ASC: comp = Comparator.comparingInt(m -> m.price); break;
                 case PRICE_DESC: comp = Comparator.comparingInt((MenuItem m) -> m.price).reversed(); break;
-                case DATE_ASC:   comp = Comparator.comparingLong(m -> m.id); break;
-                default:         comp = Comparator.comparingLong((MenuItem m) -> m.id).reversed();
+                case DATE_ASC: comp = Comparator.comparingLong(m -> m.id); break;
+                default: comp = Comparator.comparingLong((MenuItem m) -> m.id).reversed();
             }
             Collections.sort(data, comp);
             notifyDataSetChanged();
