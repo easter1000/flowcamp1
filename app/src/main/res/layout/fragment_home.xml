@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment"
-    android:fitsSystemWindows="true">
+    tools:context=".ui.home.HomeFragment">
 
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:orientation="horizontal"
+        android:layout_marginTop="24dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:gravity="center_vertical"
@@ -24,7 +24,6 @@
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:dropDownWidth="match_parent"
-            android:popupBackground="@android:color/white"
             android:spinnerMode="dropdown" />
 
         <View
@@ -41,7 +40,8 @@
             android:src="@drawable/ic_add"
             android:adjustViewBounds="true"
             android:scaleType="centerInside"
-            android:padding="2dp" />
+            android:padding="2dp"
+            app:tint="?attr/iconColor"/>
 
         <ImageButton
             android:id="@+id/btn_sort"
@@ -52,7 +52,8 @@
             android:contentDescription="@null"
             android:adjustViewBounds="true"
             android:scaleType="centerInside"
-            android:padding="3dp"/>
+            android:padding="3dp"
+            app:tint="?attr/iconColor"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
