@@ -127,7 +127,7 @@ public class AddRestaurantDialogFragment extends DialogFragment {
         TextView titleTextView = customTitleView.findViewById(R.id.dialog_title_text);
         ImageView backBtn = customTitleView.findViewById(R.id.dialog_title_back);
 
-        titleTextView.setText(restaurantId != -1 ? "메뉴 수정" : "메뉴 추가");
+        titleTextView.setText(restaurantId != -1 ? "가게 수정" : "가게 추가");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setCustomTitle(customTitleView)

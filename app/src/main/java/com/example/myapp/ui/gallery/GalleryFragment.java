@@ -141,7 +141,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         });
 
         recyclerView = view.findViewById(R.id.recycler_gallery);
-        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 4));
+        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 3));
         adapter = new GalleryAdapter(requireContext(), this::onMenuClicked);
         recyclerView.setAdapter(adapter);
 

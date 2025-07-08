@@ -3,41 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingBottom="16dp">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:orientation="horizontal"
-        android:gravity="end">
-
-        <Button
-            android:id="@+id/btn_edit"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:text="수정" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-
-        <Button
-            android:id="@+id/btn_delete"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:text="삭제" />
-    </LinearLayout>
+    android:padding="16dp">
 
     <ImageView
         android:id="@+id/md_img"
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:adjustViewBounds="true"
-        android:scaleType="centerCrop"
-        android:paddingTop="10dp"/>
+        android:scaleType="centerCrop" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -51,7 +24,8 @@
             android:textStyle="bold"
             android:textSize="22sp"
             android:layout_weight="1"
-            android:text="메뉴 이름"/>
+            android:text="메뉴 이름"
+            android:textColor="?attr/myTextColorPrimary"/>
         <TextView
             android:id="@+id/md_price"
             android:layout_width="match_parent"
@@ -80,7 +54,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#E0E0E0"
+        android:background="?attr/dividerColor"
         android:layout_marginTop="8dp"/>
 
     <TextView
@@ -96,5 +70,33 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="2dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_delete"
+            style="@style/CustomButton"
+            android:layout_width="100dp"
+            android:layout_height="35dp"
+            android:layout_marginEnd="35dp"
+            android:text="삭제"
+            android:textSize="13sp"
+            android:textAlignment="center"/>
+
+        <Button
+            android:id="@+id/btn_edit"
+            style="@style/CustomButton"
+            android:layout_width="100dp"
+            android:layout_height="35dp"
+            android:text="수정"
+            android:textSize="13sp"
+            android:textAlignment="center"/>
+
+    </LinearLayout>
 
 </LinearLayout>
