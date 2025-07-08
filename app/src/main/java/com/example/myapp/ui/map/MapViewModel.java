@@ -9,8 +9,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
 import com.example.myapp.data.CuisineType;
-import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
+import com.example.myapp.data.dao.RestaurantDao;
 import com.example.myapp.ui.DBRepository;
 
 import java.util.List;
@@ -18,7 +18,6 @@ import java.util.List;
 public class MapViewModel extends AndroidViewModel {
 
     private final DBRepository repo;
-    private final LiveData<List<MenuItem>> menuItems;
     private final LiveData<List<Restaurant>> restaurants;
     private final MutableLiveData<CuisineType> filterType = new MutableLiveData<>();
 
@@ -26,12 +25,13 @@ public class MapViewModel extends AndroidViewModel {
         super(app);
         repo = new DBRepository(app);
         restaurants = repo.getAllRestaurants();
-        menuItems = repo.getAllMenus();
     }
 
     public LiveData<List<Restaurant>> getRestaurants() { return restaurants; }
 
-    public LiveData<List<MenuItem>> getMenuItems() { return menuItems; }
+    public LiveData<RestaurantDao.RestaurantWithMenus> getRestaurantWithMenus(long restaurantId) {
+        return repo.getRestaurantWithMenus(restaurantId);
+    }
 
     public void setFilter(CuisineType type) {
         filterType.setValue(type);

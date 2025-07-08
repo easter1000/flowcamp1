@@ -1,18 +1,35 @@
 package com.example.myapp.ui.map;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
 import com.example.myapp.R;
+import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
+import com.example.myapp.data.dao.RestaurantDao;
+import com.example.myapp.data.db.Converters;
 import com.example.myapp.databinding.FragmentMapBinding;
+import com.example.myapp.ui.gallery.AddRestaurantDialogFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,12 +41,22 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Marker;
 
 import java.util.List;
+import java.util.Locale;
 
-public class MapFragment extends Fragment  implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private FragmentMapBinding binding;
     private MapViewModel mapViewModel;
     private GoogleMap googleMap;
+    private CardView cardPlaceInfo;
+    private TextView restaurantName;
+    private TextView restaurantType;
+    private TextView restaurantRating;
+    private TextView restaurantLocation;
+    HorizontalScrollView horizontalScrollViewImages;
+    LinearLayout expandableContainer;
+    LinearLayout linearLayoutImages;
+    Button delBtn, editBtn;
 
     @Nullable
     @Override
@@ -46,6 +73,19 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState);
         //observeViewModel();
 
+        if (binding != null) {
+            cardPlaceInfo = binding.cardPlaceInfoContainer;
+            restaurantName = cardPlaceInfo.findViewById(R.id.textViewPlaceName);
+            restaurantType = cardPlaceInfo.findViewById(R.id.textViewPlaceCategory);
+            restaurantRating = cardPlaceInfo.findViewById(R.id.textViewAverageRating);
+            restaurantLocation = cardPlaceInfo.findViewById(R.id.textViewPlaceAddress);
+            horizontalScrollViewImages = cardPlaceInfo.findViewById(R.id.horizontalScrollViewImages);
+            expandableContainer = cardPlaceInfo.findViewById(R.id.expandableContainer);
+            linearLayoutImages = cardPlaceInfo.findViewById(R.id.linearLayoutImages);
+            delBtn = cardPlaceInfo.findViewById(R.id.btnDel);
+            editBtn = cardPlaceInfo.findViewById(R.id.btnEdit);
+        }
+
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this); // OnMapReadyCallback을 현재 클래스로 설정
@@ -58,6 +98,7 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback {
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.googleMap = googleMap;
         this.googleMap.setOnMarkerClickListener(this::onMarkerClick);
+        this.googleMap.setOnMapClickListener(this::onEmptySpaceClick);
         observeViewModel();
     }
 
@@ -90,23 +131,120 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback {
             }
         }
 
-        LatLngBounds bounds = builder.build();
-        int padding = 100; // 지도의 가장자리로부터의 여백 (픽셀 단위)
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
+        if (restaurants.size() == 1) {
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(1, 1), 15));
+        } else {
+            LatLngBounds bounds = builder.build();
+            int padding = 100; // 지도의 가장자리로부터의 여백 (픽셀 단위)
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
+        }
     }
 
 
+    public void onEmptySpaceClick(LatLng latLng) {
+        cardPlaceInfo.setVisibility(View.GONE);
+    }
+
     public boolean onMarkerClick(@NonNull Marker marker) {
         Object tag = marker.getTag();
+        LatLng latLng = marker.getPosition();
 
         if (tag instanceof Long) {
             long restaurantId = (Long) tag;
-            MapBottomSheet.newInstance(restaurantId)
-                    .show(getChildFragmentManager(), "detail");
+            mapViewModel.getRestaurantWithMenus(restaurantId).observe(getViewLifecycleOwner(), r -> {
+                if (r != null) {
+                    showPlaceInfoCard(r);
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                }
+                else {
+                    cardPlaceInfo.setVisibility(View.GONE);
+                }
+            });
         } else {
             return false;
         }
         return true;
+    }
+
+    public void showPlaceInfoCard(RestaurantDao.RestaurantWithMenus r) {
+        Restaurant restaurant = r.restaurant;
+        List<MenuItem> menus = r.menus;
+
+        float ratingSum = 0;
+        int ratingCount = menus.size();
+        for (MenuItem m : menus) {
+            ratingSum += m.rating;
+        }
+        float averageRating;
+        if (ratingCount > 0) {
+            averageRating = ratingSum / ratingCount;
+            restaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
+        } else {
+            restaurantRating.setText("⭐ N/A");
+        }
+
+        restaurantName.setText(restaurant.name);
+        restaurantType.setText(Converters.fromCuisine(restaurant.cuisineType));
+        restaurantLocation.setText(restaurant.location);
+        expandableContainer.setVisibility(View.VISIBLE);
+        populateImages(menus, linearLayoutImages, requireContext());
+        delBtn.setOnClickListener(v -> onDeleteClick(restaurant));
+        editBtn.setOnClickListener(v -> onEditClick(restaurant));
+        cardPlaceInfo.setVisibility(View.VISIBLE);
+    }
+
+    private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context) {
+        imageContainer.removeAllViews();
+
+        final int IMAGE_SIZE_DP = 120;
+        final int MARGIN_RIGHT_DP = 8;
+
+        int imageSizeInPx = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, IMAGE_SIZE_DP, context.getResources().getDisplayMetrics());
+        int marginRightInPx = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, MARGIN_RIGHT_DP, context.getResources().getDisplayMetrics());
+
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        for (MenuItem menuItem : restaurantMenus) {
+            View itemView = inflater.inflate(R.layout.item_gallery_image, imageContainer, false);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(imageSizeInPx, imageSizeInPx);
+            params.rightMargin = marginRightInPx;
+            itemView.setLayoutParams(params);
+
+            ImageView imageView = itemView.findViewById(R.id.imageView);
+            RatingBar ratingBar = itemView.findViewById(R.id.ratingBar);
+
+            Glide.with(context)
+                    .load(menuItem.imageUri)
+                    .centerCrop()
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.ic_dashboard_black_24dp)
+                    .into(imageView);
+
+            ratingBar.setRating(menuItem.rating);
+
+            imageContainer.addView(itemView);
+        }
+    }
+
+    private void onDeleteClick(Restaurant restaurant) {
+        Log.d("HomeFragment", "onDeleteClick received for: " + restaurant.name);
+        new AlertDialog.Builder(requireContext())
+                .setTitle("레스토랑 삭제")
+                .setMessage("'" + restaurant.name + "'을(를) 정말 삭제하시겠습니까?\n관련된 모든 메뉴 정보도 함께 삭제됩니다.")
+                .setPositiveButton("삭제", (dialog, which) -> {
+                    mapViewModel.deleteRestaurant(restaurant);
+                    Toast.makeText(getContext(), "'" + restaurant.name + "'이(가) 삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("취소", null)
+                .show();
+    }
+
+    private void onEditClick(Restaurant restaurant) {
+        AddRestaurantDialogFragment dialogFragment = AddRestaurantDialogFragment.newInstanceForEdit(restaurant.id);
+        dialogFragment.show(getParentFragmentManager(), "EditRestaurantDialog");
     }
 
     @Override
