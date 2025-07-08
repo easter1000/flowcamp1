@@ -21,6 +21,9 @@ public class Restaurant {
     @ColumnInfo(name="location")
     public String location;
 
+    @ColumnInfo(name="detailedLocation")
+    public String detailedLocation;
+
     @ColumnInfo(name="cuisine_type")
     public CuisineType cuisineType;
 

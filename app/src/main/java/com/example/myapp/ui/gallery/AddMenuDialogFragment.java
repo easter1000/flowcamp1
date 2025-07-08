@@ -95,12 +95,14 @@ public class AddMenuDialogFragment extends DialogFragment {
         initializeViews(v);
 
         setupRestaurantAutoComplete(restaurantEt, repo);
-        Glide.with(this)
-                .load(imageUri)
-                .centerCrop()
-                .placeholder(R.drawable.placeholder)
-                .error(R.drawable.placeholder)
-                .into(imageView);
+        if (menuId == -1 && imageUri != null) {
+            Glide.with(this)
+                    .load(imageUri)
+                    .centerCrop()
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
+                    .into(imageView);
+        }
 
         if (menuId != -1) {
             loadMenuDataForEdit();
@@ -199,6 +201,13 @@ public class AddMenuDialogFragment extends DialogFragment {
             reviewEt.setText(menu.review);
             priceEt.setText(String.valueOf(menu.price));
             ratingBar.setRating(menu.rating);
+
+            Glide.with(this)
+                    .load(imageUri)
+                    .centerCrop()
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
+                    .into(imageView);
 
             restaurantEt.setEnabled(false);
 

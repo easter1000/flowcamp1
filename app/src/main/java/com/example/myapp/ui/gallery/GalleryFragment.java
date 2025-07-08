@@ -47,6 +47,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
     private GalleryAdapter adapter;
     private CuisineType current = CuisineType.ALL;
     private int selectedSortIndex = 0;
+    private View emptyHomeView;
 
     @Nullable
     @Override
@@ -66,6 +67,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(GalleryViewModel.class);
+        emptyHomeView = view.findViewById(R.id.emptyHomeView);
 
         Spinner spinner = view.findViewById(R.id.spinner_filter);
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
@@ -145,9 +147,25 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         adapter = new GalleryAdapter(requireContext(), this::onMenuClicked);
         recyclerView.setAdapter(adapter);
 
-        viewModel.getMenuItems().observe(getViewLifecycleOwner(), adapter::setData);
+        viewModel.getMenuItems().observe(getViewLifecycleOwner(), menus -> {
+            toggleVisibility();
+            adapter.setData(menus);
+        });
 
         viewModel.setFilter(current);
+
+        toggleVisibility();
+    }
+
+    private void toggleVisibility() {
+        List<MenuItem> list = viewModel.getMenuItems().getValue();
+        if (list == null || list.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            emptyHomeView.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyHomeView.setVisibility(View.GONE);
+        }
     }
 
     public void onMenuClicked(MenuItem item) {
