@@ -24,7 +24,6 @@
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:dropDownWidth="match_parent"
-            android:popupBackground="@android:color/white"
             android:spinnerMode="dropdown" />
 
         <View
@@ -41,7 +40,8 @@
             android:src="@drawable/ic_add"
             android:adjustViewBounds="true"
             android:scaleType="centerInside"
-            android:padding="2dp" />
+            android:padding="2dp"
+            app:tint="?attr/iconColor"/>
 
         <ImageButton
             android:id="@+id/btn_sort"
@@ -52,7 +52,8 @@
             android:contentDescription="@null"
             android:adjustViewBounds="true"
             android:scaleType="centerInside"
-            android:padding="3dp"/>
+            android:padding="3dp"
+            app:tint="?attr/iconColor"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
