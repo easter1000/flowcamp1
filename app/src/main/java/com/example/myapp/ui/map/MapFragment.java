@@ -527,9 +527,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         float averageRating;
         if (ratingCount > 0) {
             averageRating = ratingSum / ratingCount;
-            restaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
+            restaurantRating.setText(String.format(Locale.ROOT, "%.1f", averageRating));
         } else {
-            restaurantRating.setText("⭐ N/A");
+            restaurantRating.setText("");
         }
 
         if (currentLocation != null) {
@@ -560,7 +560,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
         restaurantName.setText(restaurant.name);
-        restaurantType.setText(Converters.fromCuisine(restaurant.cuisineType));
+        restaurantType.setText(restaurant.cuisineType.toString());
         restaurantLocation.setText(restaurant.location);
         expandableContainer.setVisibility(View.VISIBLE);
         populateImages(menus, linearLayoutImages, requireContext());

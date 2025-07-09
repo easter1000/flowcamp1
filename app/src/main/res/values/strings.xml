@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My app</string>
+    <string name="app_name">matka</string>
     <string name="title_home">가게</string>
     <string name="dot_separator">∙</string>
     <string name="title_dashboard">메뉴</string>
