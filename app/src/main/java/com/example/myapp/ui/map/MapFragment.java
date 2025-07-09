@@ -44,6 +44,7 @@ import com.example.myapp.data.dao.RestaurantDao;
 import com.example.myapp.data.db.Converters;
 import com.example.myapp.databinding.FragmentMapBinding;
 import com.example.myapp.ui.gallery.AddRestaurantDialogFragment;
+import com.example.myapp.ui.gallery.MenuDetailBottomSheet;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -98,6 +99,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private Place temporarySelectedPlace;
     private TextView tvNewPlaceName, tvNewPlaceAddress, tvNewPlaceCategory;
     private boolean isGenericLocation;
+    private int selectedSortIndex = 0;
 
     private static final float DEFAULT_HUE = 40;
 
@@ -177,7 +179,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
-            mapFragment.getMapAsync(this); // OnMapReadyCallback을 현재 클래스로 설정
+            mapFragment.getMapAsync(this);
             loadCurrentLocation();
         }
 
@@ -352,7 +354,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                         new LatLng(restaurants.get(0).latitude, restaurants.get(0).longitude), 15));
             } else {
-                int padding = 300;
+                int padding = 200;
                 try {
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), padding));
                 } catch (IllegalStateException e) {
@@ -637,6 +639,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     .into(imageView);
 
             ratingBar.setRating(menuItem.rating);
+
+            itemView.setOnClickListener(v -> {
+                MenuDetailBottomSheet.newInstance(menuItem.id)
+                        .show(getChildFragmentManager(), "menu_detail_from_map");
+            });
 
             imageContainer.addView(itemView);
         }

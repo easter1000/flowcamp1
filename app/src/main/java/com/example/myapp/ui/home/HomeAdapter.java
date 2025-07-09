@@ -70,12 +70,10 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         this.restaurants = restaurants;
         Set<Long> existingIds = restaurants.stream().map(r -> r.id).collect(Collectors.toSet());
         openedItems.retainAll(existingIds);
-        sort(sortOrder);
     }
 
     public void setMenuItems(List<MenuItem> menuItems) {
         this.menuItems = menuItems;
-        sort(sortOrder);
     }
 
     public void sort(SortOrder order) {

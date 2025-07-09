@@ -271,6 +271,7 @@ public class HomeFragment extends Fragment implements
         homeViewModel.getRestaurants().observe(getViewLifecycleOwner(), restaurants -> {
             if (homeAdapter != null && restaurants != null) {
                 homeAdapter.setRestaurants(restaurants);
+                homeAdapter.sort(getSortOrderFromIndex(selectedSortIndex));
             }
             toggleVisibility();
         });
@@ -278,9 +279,22 @@ public class HomeFragment extends Fragment implements
         homeViewModel.getMenuItems().observe(getViewLifecycleOwner(), menuItems -> {
             if (homeAdapter != null && menuItems != null) {
                 homeAdapter.setMenuItems(menuItems);
+                homeAdapter.sort(getSortOrderFromIndex(selectedSortIndex));
             }
             toggleVisibility();
         });
+    }
+
+    private SortOrder getSortOrderFromIndex(int index) {
+        switch (index) {
+            case 0: return SortOrder.DATE_DESC;
+            case 1: return SortOrder.DATE_ASC;
+            case 2: return SortOrder.DISTANCE_ASC;
+            case 3: return SortOrder.NAME_ASC;
+            case 4: return SortOrder.NAME_DESC;
+            case 5: return SortOrder.RATING_DESC;
+            case 6: default: return SortOrder.RATING_ASC;
+        }
     }
 
     @Override

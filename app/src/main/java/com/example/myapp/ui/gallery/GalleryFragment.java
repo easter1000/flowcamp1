@@ -177,11 +177,25 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         viewModel.getMenuItems().observe(getViewLifecycleOwner(), menus -> {
             toggleVisibility();
             adapter.setData(menus);
+            adapter.sort(getSortOrderFromIndex(selectedSortIndex));
         });
 
         viewModel.setFilter(current);
 
         toggleVisibility();
+    }
+
+    private SortOrder getSortOrderFromIndex(int index) {
+        switch (index) {
+            case 0: return SortOrder.DATE_DESC;
+            case 1: return SortOrder.DATE_ASC;
+            case 2: return SortOrder.NAME_ASC;
+            case 3: return SortOrder.NAME_DESC;
+            case 4: return SortOrder.RATING_DESC;
+            case 5: return SortOrder.RATING_ASC;
+            case 6: return SortOrder.PRICE_DESC;
+            case 7: default: return SortOrder.PRICE_ASC;
+        }
     }
 
     private void toggleVisibility() {
@@ -305,7 +319,6 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         public void setData(List<MenuItem> menus) {
             this.data = menus;
-            sort(sortOrder);
         }
 
         public void sort(SortOrder order) {
