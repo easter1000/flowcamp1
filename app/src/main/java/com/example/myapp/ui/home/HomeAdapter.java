@@ -201,7 +201,6 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         }
 
         public void bind(final Restaurant restaurant, final Context context, final HomeAdapter adapter, final List<MenuItem> menuItems) {
-            Log.e("HomeAdapterDebug", "가게이름: " + restaurant.name + ", 메뉴판 URI: " + restaurant.menuBoardUri);
             List<MenuItem> restaurantMenus;
             if (menuItems != null) {
                 restaurantMenus = menuItems.stream()
@@ -237,7 +236,6 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             final boolean isOpened = adapter.openedItems.contains(restaurant.id);
 
             if (isOpened) {
-                expandableContainer.setVisibility(View.VISIBLE);
                 expandableContainer.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
                 populateImages(restaurantMenus, linearLayoutImages, context, adapter);
             } else {

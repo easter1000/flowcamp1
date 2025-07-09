@@ -97,9 +97,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private CardView cardNewPlaceInfo;
     private Place temporarySelectedPlace;
     private TextView tvNewPlaceName, tvNewPlaceAddress, tvNewPlaceCategory;
+    private boolean isGenericLocation;
 
     private static final float DEFAULT_HUE = 40;
-    private boolean isGenericLocation;
 
     @Nullable
     @Override
@@ -109,6 +109,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         selectedVM = new ViewModelProvider(requireActivity()).get(SelectedRestaurantViewModel.class);
 
         if (getContext() != null) {
+            //Places.initialize(getContext().getApplicationContext(), "YOUR_API_KEY");
             placesClient = Places.createClient(getContext());
             geocoder = new Geocoder(getContext(), Locale.KOREAN);
         }
@@ -120,19 +121,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        getParentFragmentManager().setFragmentResultListener("restaurantAddedRequest", this, (requestKey, bundle) -> {
-            clearTemporarySelection();
-
-            long newRestaurantId = bundle.getLong("newRestaurantId", -1);
-            if (newRestaurantId != -1) {
-                mapViewModel.getRestaurantById(newRestaurantId).observe(getViewLifecycleOwner(), newRestaurant -> {
-                    if (newRestaurant != null) {
-                        selectedVM.select(newRestaurant);
-                    }
-                });
-            }
-        });
+        //observeViewModel();
 
         Spinner spinner = view.findViewById(R.id.spinner_filter);
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
@@ -188,7 +177,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
+            mapFragment.getMapAsync(this); // OnMapReadyCallback을 현재 클래스로 설정
             loadCurrentLocation();
         }
 
@@ -309,6 +298,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
     }
 
+
     public void observeViewModel() {
         mapViewModel.getRestaurants().observe(getViewLifecycleOwner(), restaurants -> {
             if (this.googleMap != null && restaurants != null) {
@@ -320,6 +310,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public void displayMarkers(List<Restaurant> restaurants) {
         this.googleMap.clear();
         markerMap.clear();
+        cardPlaceInfo.setVisibility(View.GONE);
+        selectedMarker = null;
 
         if (restaurants == null || restaurants.isEmpty()) {
             return;
@@ -338,6 +330,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             boolean isSelected = currentSelectedId != null && restaurant.id == currentSelectedId;
             Marker marker = googleMap.addMarker(new MarkerOptions()
                     .position(pos)
+                    .title(restaurant.name)
                     .icon(BitmapDescriptorFactory.defaultMarker(
                             isSelected ? BitmapDescriptorFactory.HUE_RED
                                     : DEFAULT_HUE))
@@ -345,35 +338,32 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             if (marker != null) {
                 marker.setTag(restaurant.id);
                 markerMap.put(restaurant.id, marker);
-                if (isSelected) {
-                    selectedMarker = marker;
-                }
+                if (isSelected) selectedMarker = marker;
             }
         }
 
-        if (selectedRestaurant == null) {
-            if (getView() != null) {
-                getView().post(() -> {
-                    try {
-                        if (restaurants.size() == 1) {
-                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(restaurants.get(0).latitude, restaurants.get(0).longitude), 15));
-                        } else if (!restaurants.isEmpty()) {
-                            int padding = 300;
-                            LatLngBounds bounds = builder.build();
-                            googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
-                        }
-                    } catch (IllegalStateException e) {
-                        Log.e("MapFragment", "LatLngBounds or view not ready for camera update.", e);
-                    }
-                });
+        if (selectedRestaurant != null && markerMap.containsKey(selectedRestaurant.id)) {
+            LatLng pos = new LatLng(selectedRestaurant.latitude, selectedRestaurant.longitude);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 17));
+            mapViewModel.getRestaurantWithMenus(selectedRestaurant.id)
+                    .observe(getViewLifecycleOwner(), this::showPlaceInfoCard);
+        } else {
+            if (restaurants.size() == 1) {
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(restaurants.get(0).latitude, restaurants.get(0).longitude), 15));
+            } else {
+                int padding = 300;
+                try {
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), padding));
+                } catch (IllegalStateException e) {
+                    Log.e("MapFragment", "LatLngBounds builder was empty.", e);
+                }
             }
         }
     }
 
     private void focusOnRestaurant(@NonNull Restaurant restaurant) {
         if (googleMap == null) return;
-        clearTemporarySelection();
 
         if (selectedMarker != null) {
             selectedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(DEFAULT_HUE));
@@ -382,7 +372,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         LatLng pos = new LatLng(restaurant.latitude, restaurant.longitude);
 
         selectedMarker = findMarkerByRestaurantId(restaurant.id);
-        if (selectedMarker != null) {
+        if (selectedMarker == null) {
+            selectedMarker = googleMap.addMarker(new MarkerOptions()
+                    .position(pos)
+                    .title(restaurant.name)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+            if (selectedMarker != null) selectedMarker.setTag(restaurant.id);
+        } else {
             selectedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
         }
 
@@ -511,6 +507,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     public void showPlaceInfoCard(RestaurantDao.RestaurantWithMenus r) {
+        if (r == null || r.restaurant == null) {
+            if (cardPlaceInfo != null) {
+                cardPlaceInfo.setVisibility(View.GONE);
+            }
+            return;
+        }
+
         Restaurant restaurant = r.restaurant;
         List<MenuItem> menus = r.menus;
 
