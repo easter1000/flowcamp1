@@ -17,18 +17,18 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Gallery;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,15 +40,10 @@ import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
 import com.example.myapp.data.SortOrder;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class GalleryFragment extends Fragment implements AddMenuDialogFragment.OnMenuCreatedListener {
     private GalleryViewModel viewModel;
@@ -66,6 +61,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         super.onCreate(savedInstanceState);
         registerLaunchers();
     }
+    private boolean isInfoView = false;
 
     @Nullable
     @Override
@@ -135,7 +131,14 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                     .show();
         });
         btnToggle.setOnClickListener(v -> {
+            isInfoView = !isInfoView;
 
+            if(isInfoView) {
+                recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+            } else {
+                recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 3));
+            }
+            adapter.setInfoViewMode(isInfoView);
         });
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -155,9 +158,14 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         });
 
         recyclerView = view.findViewById(R.id.recycler_gallery);
-        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 3));
-        adapter = new GalleryAdapter(requireContext(), this::onMenuClicked);
+        if(isInfoView) {
+            recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 3));
+        }
+        adapter = new GalleryAdapter(requireContext(), this::onMenuClicked, isInfoView, viewModel, getViewLifecycleOwner());
         recyclerView.setAdapter(adapter);
+        adapter.setInfoViewMode(isInfoView);
 
         viewModel.getMenuItems().observe(getViewLifecycleOwner(), menus -> {
             toggleVisibility();
@@ -275,11 +283,17 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         private List<MenuItem> data;
         private final OnMenuClickListener listener;
         private SortOrder sortOrder = SortOrder.DATE_DESC;
+        private boolean isInfoView;
+        private final GalleryViewModel viewModel;
+        private final LifecycleOwner lifecycleOwner;
 
-        public GalleryAdapter(Context context, OnMenuClickListener l) {
+        public GalleryAdapter(Context context, OnMenuClickListener l, boolean isInfoView, GalleryViewModel viewModel, LifecycleOwner lifecycleOwner) {
             this.context = context;
             this.data = new ArrayList<>();
             listener = l;
+            this.isInfoView = isInfoView;
+            this.viewModel = viewModel;
+            this.lifecycleOwner = lifecycleOwner;
         }
 
         public void setData(List<MenuItem> menus) {
@@ -305,6 +319,11 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
             notifyDataSetChanged();
         }
 
+        public void setInfoViewMode(boolean isInfoView) {
+            this.isInfoView = isInfoView;
+            notifyDataSetChanged();
+        }
+
         @NonNull
         @Override
         public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -313,6 +332,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         @Override
         public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
+            MenuItem menu = data.get(position);
             Glide.with(context)
                     .load(data.get(position).imageUri)
                     .centerCrop()
@@ -321,6 +341,17 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                     .into(holder.imageView);
             holder.itemView.setOnClickListener(v -> listener.onMenuClicked(data.get(position)));
             holder.ratingBar.setRating(data.get(position).rating);
+
+            if (isInfoView) {
+                holder.menuInfoContainer.setVisibility(View.VISIBLE);
+                holder.textViewMenuName.setText(data.get(position).menuName);
+
+                viewModel.getRestaurantById(menu.restaurantId).observe(lifecycleOwner, restaurant -> {
+                    holder.textViewRestaurantName.setText(restaurant.name);
+                });
+            } else {
+                holder.itemView.findViewById(R.id.menuInfoContainer).setVisibility(View.GONE);
+            }
             holder.menuName.setText(data.get(position).menuName);
         }
 
@@ -333,11 +364,16 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
             public ImageView imageView;
             public RatingBar ratingBar;
             public TextView menuName;
+            public LinearLayout menuInfoContainer;
+            public TextView textViewMenuName;
+            public TextView textViewRestaurantName;
             public ImageViewHolder(View itemView) {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.imageView);
                 ratingBar = itemView.findViewById(R.id.ratingBar);
-                menuName = itemView.findViewById(R.id.menu_name);
+                menuInfoContainer = itemView.findViewById(R.id.menuInfoContainer);
+                textViewMenuName = itemView.findViewById(R.id.textViewMenuName);
+                textViewRestaurantName = itemView.findViewById(R.id.textViewRestaurantName);
             }
         }
     }

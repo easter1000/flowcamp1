@@ -16,6 +16,8 @@
         <item name="myTextColorSecondary">@color/gray</item>
         <item name="iconColor">@color/dark_gray</item>
         <item name="dividerColor">@color/light_gray</item>
+        <item name="android:fontFamily">@font/nanum_square_round_family</item>
+        <item name="fontFamily">@font/nanum_square_round_family</item>
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">

@@ -218,11 +218,11 @@ public class HomeFragment extends Fragment implements
         homeAdapter.setOnEditMenuboardClickListener(this);
         homeAdapter.setOnMapClickListener(this);
 
-        MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(getContext(), MaterialDividerItemDecoration.VERTICAL);
+        /*MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(getContext(), MaterialDividerItemDecoration.VERTICAL);
         divider.setDividerInsetStart(32);
         divider.setDividerInsetEnd(32);
         divider.setLastItemDecorated(false);
-        recyclerView.addItemDecoration(divider);
+        recyclerView.addItemDecoration(divider);*/
     }
 
     @Override public void onMapClick(Restaurant r) {

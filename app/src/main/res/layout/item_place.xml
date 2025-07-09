@@ -1,150 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="?android:attr/selectableItemBackground"> <!-- 클릭 효과 (선택) -->
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
 
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="?android:attr/selectableItemBackground"> <!-- 클릭 효과 (선택) -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_weight="1">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/textViewPlaceName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="?attr/myTextColorPrimary"
-                    android:textSize="18sp"
-                    tools:text="식당 이름" />
-
-                <TextView
-                    android:id="@+id/textViewPlaceCategory"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:textColor="?attr/myTextColorSecondary"
-                    android:textSize="14sp"
-                    tools:text="카테고리" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/textViewAverageRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="?attr/myTextColorSecondary"
-                    android:textSize="14sp"
-                    tools:text="⭐ 4.5" />
-
-                <TextView
-                    android:id="@+id/textViewRatingAddressSeparator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/dot_separator"
-                    android:textColor="?attr/myTextColorSecondary"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/distanceTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:textColor="?attr/myTextColorSecondary"
-                    android:textSize="14sp"
-                    tools:text="1.7km" />
-
-            </LinearLayout>
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textViewPlaceAddress"
+                android:id="@+id/textViewPlaceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/myTextColorPrimary"
+                android:textSize="18sp"
+                tools:text="식당 이름" />
+
+            <TextView
+                android:id="@+id/textViewPlaceCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:textColor="?attr/myTextColorSecondary"
+                android:textSize="14sp"
+                tools:text="카테고리" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textViewAverageRating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/myTextColorSecondary"
-                android:textSize="12sp"
-                tools:text="식당 주소 123" />
-        </LinearLayout>
+                android:textSize="14sp"
+                tools:text="⭐ 4.5" />
 
-        <ImageView
-            android:id="@+id/map_btn"
-            android:layout_width="37dp"
-            android:layout_height="37dp"
-            android:src="@drawable/button_map"
-            android:layout_gravity="center_vertical"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/expandableContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="vertical">
-
-        <HorizontalScrollView
-            android:id="@+id/horizontalScrollViewImages"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp">
-
-            <LinearLayout
-                android:id="@+id/linearLayoutImages"
+            <TextView
+                android:id="@+id/textViewRatingAddressSeparator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal" />
-        </HorizontalScrollView>
+                android:layout_marginStart="8dp"
+                android:text="@string/dot_separator"
+                android:textColor="?attr/myTextColorSecondary"
+                android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/textViewMenuboard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:textColor="@color/yellow_200"
-            android:textSize="14sp"
-            android:text="메뉴판 보기"/>
-
-        <LinearLayout
-            android:id="@+id/buttonContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnDel"
-                style="@style/Button.Deactivated"
-                android:layout_width="80dp"
-                android:layout_height="37dp"
-                android:layout_marginEnd="16dp"
-                android:text="삭제" />
-
-            <Button
-                android:id="@+id/btnEdit"
-                style="@style/Button.Activated"
-                android:layout_width="80dp"
-                android:layout_height="37dp"
-                android:text="수정" />
+            <TextView
+                android:id="@+id/distanceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="?attr/myTextColorSecondary"
+                android:textSize="14sp"
+                tools:text="1.7km" />
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/textViewPlaceAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/myTextColorSecondary"
+            android:textSize="12sp"
+            tools:text="식당 주소 123" />
+
+        <LinearLayout
+            android:id="@+id/expandableContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <HorizontalScrollView
+                android:id="@+id/horizontalScrollViewImages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:id="@+id/linearLayoutImages"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/textViewMenuboard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:textColor="@color/yellow_200"
+                android:textSize="14sp"
+                android:text="메뉴판 보기"/>
+
+            <LinearLayout
+                android:id="@+id/buttonContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnDel"
+                    style="@style/Button.Deactivated"
+                    android:layout_width="80dp"
+                    android:layout_height="37dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="삭제" />
+
+                <Button
+                    android:id="@+id/btnEdit"
+                    style="@style/Button.Activated"
+                    android:layout_width="80dp"
+                    android:layout_height="37dp"
+                    android:text="수정" />
+
+            </LinearLayout>
+        </LinearLayout>
+
     </LinearLayout>
 
-</LinearLayout>
+</androidx.cardview.widget.CardView>
