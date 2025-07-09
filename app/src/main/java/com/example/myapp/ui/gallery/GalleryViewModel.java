@@ -29,6 +29,7 @@ public class GalleryViewModel extends AndroidViewModel {
         restaurants = repo.getAllRestaurants();
     }
 
+    public LiveData<MenuItem> getMenuItemById(long id) { return repo.getMenuById(id); }
     public LiveData<List<MenuItem>> getMenuItems()   { return menuItems; }
     public LiveData<List<Restaurant>> getRestaurants() { return restaurants; }
 

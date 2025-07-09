@@ -14,5 +14,7 @@
         <!-- Customize your theme here. -->
         <item name="myTextColorPrimary">@color/white</item>
         <item name="myTextColorSecondary">@color/light_gray</item>
+        <item name="iconColor">@color/light_gray</item>"
+        <item name="dividerColor">@color/gray</item>
     </style>
 </resources>

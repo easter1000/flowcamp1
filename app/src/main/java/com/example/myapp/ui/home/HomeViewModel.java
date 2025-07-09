@@ -36,7 +36,6 @@ public class HomeViewModel extends AndroidViewModel {
 
     public LiveData<List<MenuItem>> getMenuItems() { return menuItems; }
     public Set<Long> getOpenedItems() { return openedItems; }
-    //public void setOpenedItems(Set<Long> openedItems) { this.openedItems.clear(); this.openedItems.addAll(openedItems); }
 
     public void setFilter(CuisineType type) {
         filterType.setValue(type);

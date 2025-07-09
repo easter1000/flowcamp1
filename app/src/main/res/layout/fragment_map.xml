@@ -1,16 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.map.MapFragment">
 
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="24dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <Spinner
+            android:id="@+id/spinner_filter"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:dropDownWidth="match_parent"
+            android:spinnerMode="dropdown" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <ImageButton
+            android:id="@+id/btn_add"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_add"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"
+            android:padding="2dp"
+            app:tint="?attr/iconColor"/>
+
+    </LinearLayout>
+
     <androidx.fragment.app.FragmentContainerView
         xmlns:map="http://schemas.android.com/apk/res-auto"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:id="@+id/map"
+        android:layout_below="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_place_info_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <include
+            android:id="@+id/card_place_info_content"
+            layout="@layout/item_place"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_new_place_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <ImageButton
+                android:id="@+id/btn_close_new_card"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_close"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:contentDescription="닫기" />
+
+            <TextView
+                android:id="@+id/tv_new_place_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/btn_close_new_card"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/myTextColorPrimary"
+                tools:text="새로운 가게 이름" />
+
+            <TextView
+                android:id="@+id/tv_new_place_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_new_place_name"
+                android:layout_marginTop="4dp"
+                android:layout_toStartOf="@id/btn_close_new_card"
+                android:layout_marginEnd="8dp"
+                android:textSize="14sp"
+                tools:text="새로운 가게 주소 예시"/>
+
+            <TextView
+                android:id="@+id/tv_new_place_category"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_toStartOf="@id/btn_close_new_card"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="5dp"
+                android:layout_alignTop="@id/btn_close_new_card"
+                android:layout_alignBottom="@id/btn_close_new_card"
+                android:textSize="13sp"
+                android:textColor="?attr/myTextColorSecondary"
+                android:gravity="center_vertical"
+                tools:text="음식점" />
+
+            <Button
+                android:id="@+id/btn_register_place"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_new_place_address"
+                android:layout_marginTop="12dp"
+                android:text="이 위치로 가게 등록하기" />
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

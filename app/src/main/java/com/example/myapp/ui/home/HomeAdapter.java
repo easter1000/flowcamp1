@@ -332,8 +332,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         private void populateImages(List<MenuItem> restaurantMenus, LinearLayout imageContainer, Context context, HomeAdapter adapter) {
             imageContainer.removeAllViews();
 
-            final int IMAGE_SIZE_DP = 120;
-            final int MARGIN_RIGHT_DP = 8;
+            final int IMAGE_SIZE_DP = 110;
+            final int MARGIN_RIGHT_DP = 2;
 
             int imageSizeInPx = (int) TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP, IMAGE_SIZE_DP, context.getResources().getDisplayMetrics());
@@ -357,6 +357,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
                 ImageView imageView = itemView.findViewById(R.id.imageView);
                 RatingBar ratingBar = itemView.findViewById(R.id.ratingBar);
+                TextView menuNameTextView = itemView.findViewById(R.id.menu_name);
 
                 Glide.with(context)
                         .load(menuItem.imageUri)
@@ -366,6 +367,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
                         .into(imageView);
 
                 ratingBar.setRating(menuItem.rating);
+                menuNameTextView.setText(menuItem.menuName);
 
                 imageContainer.addView(itemView);
             }

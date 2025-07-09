@@ -277,8 +277,7 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
                 String addressLine = address.getAddressLine(0);
-                String featureName = address.getFeatureName();
-                String placeName = (featureName != null && !featureName.equals(addressLine) && !Character.isDigit(featureName.charAt(0))) ? featureName : addressLine;
+                String placeName = "선택된 위치";
 
                 selectedPlace = Place.builder()
                         .setName(placeName)
@@ -289,7 +288,7 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
                 updateMapWithPlace(selectedPlace);
                 autocompleteFragment.setText(placeName);
                 btnSelectLocation.setEnabled(true);
-
+                showPlaceInfoCard(selectedPlace);
             } else {
                 Toast.makeText(this, "해당 위치의 주소를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show();
             }

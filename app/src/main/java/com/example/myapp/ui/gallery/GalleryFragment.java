@@ -20,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -154,7 +155,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         });
 
         recyclerView = view.findViewById(R.id.recycler_gallery);
-        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 4));
+        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 3));
         adapter = new GalleryAdapter(requireContext(), this::onMenuClicked);
         recyclerView.setAdapter(adapter);
 
@@ -320,6 +321,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                     .into(holder.imageView);
             holder.itemView.setOnClickListener(v -> listener.onMenuClicked(data.get(position)));
             holder.ratingBar.setRating(data.get(position).rating);
+            holder.menuName.setText(data.get(position).menuName);
         }
 
         @Override
@@ -330,10 +332,12 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         public static class ImageViewHolder extends RecyclerView.ViewHolder {
             public ImageView imageView;
             public RatingBar ratingBar;
+            public TextView menuName;
             public ImageViewHolder(View itemView) {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.imageView);
                 ratingBar = itemView.findViewById(R.id.ratingBar);
+                menuName = itemView.findViewById(R.id.menu_name);
             }
         }
     }

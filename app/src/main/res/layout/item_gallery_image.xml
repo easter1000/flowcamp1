@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="100dp"
-    android:layout_height="100dp">
+<com.example.myapp.ui.gallery.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="1dp">
 
     <ImageView
         android:id="@+id/imageView"
@@ -15,6 +16,17 @@
         android:layout_height="match_parent"
         android:src="@drawable/gradient_black" />
 
+    <TextView
+        android:id="@+id/menu_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="메뉴명"
+        android:textSize="11sp"
+        android:background="#80000000"
+        android:padding="2dp"
+        android:layout_margin="3dp"
+        android:textColor="@color/white"/>
+
     <RatingBar
         android:id="@+id/ratingBar"
         style="@style/RatingBar"
@@ -25,4 +37,4 @@
         android:rating="4.5"
         android:stepSize="0.5"/>
 
-</FrameLayout>
+</com.example.myapp.ui.gallery.SquareFrameLayout>

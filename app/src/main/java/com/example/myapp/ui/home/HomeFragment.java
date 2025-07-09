@@ -89,6 +89,8 @@ public class HomeFragment extends Fragment implements
                     }
                 }
         );
+
+        selectedVM = new ViewModelProvider(requireActivity()).get(SelectedRestaurantViewModel.class);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
