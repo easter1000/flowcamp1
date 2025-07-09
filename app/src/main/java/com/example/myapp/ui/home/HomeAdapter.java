@@ -45,13 +45,14 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
     private final Context context;
     private List<Restaurant> restaurants;
     private List<MenuItem> menuItems;
-    private final Set<Long> openedItems = new HashSet<>();
+    private final Set<Long> openedItems;
     private SortOrder sortOrder = SortOrder.DATE_DESC;
     private Location currentLocation;
 
-    public HomeAdapter(Context context) {
+    public HomeAdapter(Context context, Set<Long> openedItems) {
         this.context = context;
         this.restaurants = new ArrayList<>();
+        this.openedItems = openedItems;
         setHasStableIds(true);
     }
 
@@ -123,9 +124,15 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         void onEditClick(Restaurant restaurant);
     }
 
+    public interface OnMapClickListener { void onMapClick(Restaurant restaurant); }
+
+    public interface OnEditMenuboardClickListener { void onEditMenuboardClick(Restaurant restaurant); }
+
     private OnImageClickListener imageClickListener;
     private OnDeleteClickListener deleteClickListener;
     private OnEditClickListener editClickListener;
+    private OnMapClickListener mapClickListener;
+    private OnEditMenuboardClickListener editMenuboardClickListener;
 
     public void setOnImageClickListener(OnImageClickListener listener) {
         this.imageClickListener = listener;
@@ -137,6 +144,14 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
     public void setOnEditClickListener(OnEditClickListener listener) {
         this.editClickListener = listener;
+    }
+
+    public void setOnMapClickListener(OnMapClickListener listener) {
+        this.mapClickListener = listener;
+    }
+
+    public void setOnEditMenuboardClickListener(OnEditMenuboardClickListener listener) {
+        this.editMenuboardClickListener = listener;
     }
 
     @NonNull
@@ -165,6 +180,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
         LinearLayout linearLayoutImages;
         Button delBtn, editBtn;
         LinearLayout buttonContainer, expandableContainer;
+        ImageView mapBtn;
 
         public RestaurantViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -181,6 +197,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             textViewDistance = itemView.findViewById(R.id.distanceTextView);
             textViewMenuboard = itemView.findViewById(R.id.textViewMenuboard);
             textViewRatingAddressSeparator = itemView.findViewById(R.id.textViewRatingAddressSeparator);
+            mapBtn = itemView.findViewById(R.id.map_btn);
         }
 
         public void bind(final Restaurant restaurant, final Context context, final HomeAdapter adapter, final List<MenuItem> menuItems) {
@@ -221,9 +238,10 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
             if (isOpened) {
                 expandableContainer.setVisibility(View.VISIBLE);
+                expandableContainer.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
                 populateImages(restaurantMenus, linearLayoutImages, context, adapter);
             } else {
-                expandableContainer.setVisibility(View.GONE);
+                expandableContainer.getLayoutParams().height = 0;
                 linearLayoutImages.removeAllViews();
             }
 
@@ -242,6 +260,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
 
             delBtn.setOnClickListener(v -> {adapter.deleteClickListener.onDeleteClick(restaurant);});
             editBtn.setOnClickListener(v -> {adapter.editClickListener.onEditClick(restaurant);});
+            mapBtn.setOnClickListener(v -> {adapter.mapClickListener.onMapClick(restaurant);});
 
             if (adapter.currentLocation != null) {
                 textViewRatingAddressSeparator.setVisibility(View.VISIBLE);
@@ -264,17 +283,18 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
                 textViewMenuboard.setVisibility(View.VISIBLE);
                 textViewMenuboard.setPaintFlags(textViewMenuboard.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
                 textViewMenuboard.setOnClickListener(v -> {
-                    showMenuDialog(context, restaurant);
+                    showMenuDialog(context, restaurant, adapter);
                 });
             } else {
                 textViewMenuboard.setVisibility(View.GONE);
             }
         }
 
-        private void showMenuDialog(Context context, Restaurant r) {
+        private void showMenuDialog(Context context, Restaurant r, HomeAdapter adapter) {
             LayoutInflater inflater = LayoutInflater.from(context);
             View dialogView = inflater.inflate(R.layout.item_menuboard, null);
             ImageView menuboard = dialogView.findViewById(R.id.imageMenuboard);
+            TextView editMenuboard = dialogView.findViewById(R.id.text_edit);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setView(dialogView);
@@ -297,6 +317,14 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
                     .placeholder(R.drawable.placeholder)
                     .error(R.drawable.ic_dashboard_black_24dp)
                     .into(menuboard);
+
+            editMenuboard.setPaintFlags(editMenuboard.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+            editMenuboard.setOnClickListener(v -> {
+                if (adapter.editMenuboardClickListener != null) {
+                    adapter.editMenuboardClickListener.onEditMenuboardClick(r);
+                }
+                dialog.dismiss();
+            });
 
             dialog.show();
         }

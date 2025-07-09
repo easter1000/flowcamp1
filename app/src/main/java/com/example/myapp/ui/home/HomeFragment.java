@@ -24,6 +24,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,8 +34,10 @@ import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.SortOrder;
 import com.example.myapp.ui.gallery.AddRestaurantDialogFragment;
 import com.example.myapp.ui.gallery.MenuDetailBottomSheet;
+import com.example.myapp.ui.map.SelectedRestaurantViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
 
 import com.example.myapp.databinding.FragmentHomeBinding;
@@ -44,7 +48,9 @@ import java.util.List;
 public class HomeFragment extends Fragment implements
         HomeAdapter.OnImageClickListener,
         HomeAdapter.OnDeleteClickListener,
-        HomeAdapter.OnEditClickListener
+        HomeAdapter.OnEditClickListener,
+        HomeAdapter.OnEditMenuboardClickListener,
+        HomeAdapter.OnMapClickListener
 {
 
     private FragmentHomeBinding binding;
@@ -55,6 +61,9 @@ public class HomeFragment extends Fragment implements
     private ActivityResultLauncher<String> requestPerm;
     private RecyclerView recyclerView;
     private View emptyHomeView;
+    private ActivityResultLauncher<String> galleryLauncher;
+    private Restaurant restaurantToUpdate;
+    private SelectedRestaurantViewModel selectedVM;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,6 +74,21 @@ public class HomeFragment extends Fragment implements
                 new ActivityResultContracts.RequestPermission(), isGranted -> {
                     if (isGranted) fetchLocation();
                 });
+
+        galleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null && restaurantToUpdate != null) {
+                        restaurantToUpdate.menuBoardUri = uri;
+
+                        homeViewModel.updateRestaurant(restaurantToUpdate);
+
+                        Toast.makeText(getContext(), "메뉴판이 수정되었습니다.", Toast.LENGTH_SHORT).show();
+
+                        restaurantToUpdate = null;
+                    }
+                }
+        );
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -183,18 +207,30 @@ public class HomeFragment extends Fragment implements
     }
 
     private void setupRecyclerView(){
-        homeAdapter = new HomeAdapter(requireContext());
+        homeAdapter = new HomeAdapter(requireContext(), homeViewModel.getOpenedItems());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(homeAdapter);
         homeAdapter.setOnImageClickListener(this);
         homeAdapter.setOnDeleteClickListener(this);
         homeAdapter.setOnEditClickListener(this);
+        homeAdapter.setOnEditMenuboardClickListener(this);
+        homeAdapter.setOnMapClickListener(this);
 
         MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(getContext(), MaterialDividerItemDecoration.VERTICAL);
         divider.setDividerInsetStart(32);
         divider.setDividerInsetEnd(32);
         divider.setLastItemDecorated(false);
         recyclerView.addItemDecoration(divider);
+    }
+
+    @Override public void onMapClick(Restaurant r) {
+        selectedVM.select(r);
+
+        BottomNavigationView nav = requireActivity().findViewById(R.id.nav_view);
+        if (nav != null) { nav.setSelectedItemId(R.id.navigation_map); return; }
+
+        NavController nc = NavHostFragment.findNavController(this);
+        nc.navigate(R.id.navigation_map);
     }
 
     @Override
@@ -221,6 +257,12 @@ public class HomeFragment extends Fragment implements
     public void onEditClick(Restaurant restaurant) {
         AddRestaurantDialogFragment dialogFragment = AddRestaurantDialogFragment.newInstanceForEdit(restaurant.id);
         dialogFragment.show(getParentFragmentManager(), "EditRestaurantDialog");
+    }
+
+    @Override
+    public void onEditMenuboardClick(Restaurant restaurant) {
+        this.restaurantToUpdate = restaurant;
+        galleryLauncher.launch("image/*");
     }
 
     private void observeViewModel() {
