@@ -108,7 +108,7 @@
 
         <ImageView
             android:id="@+id/empty_image"
-            android:src="@drawable/ic_empty_res"
+            android:src="@drawable/character_light"
             android:layout_width="0dp"
             android:layout_height="200dp"
             android:scaleType="centerInside"
@@ -121,7 +121,7 @@
             android:layout_marginTop="10dp"
             android:layout_weight="1"
             android:textSize="16sp"
-            android:textColor="@color/dark_gray"
+            android:textColor="?attr/iconColor"
             app:layout_constraintTop_toBottomOf="@id/empty_image"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>

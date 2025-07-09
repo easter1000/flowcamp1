@@ -16,5 +16,7 @@
         <item name="myTextColorSecondary">@color/light_gray</item>
         <item name="iconColor">@color/light_gray</item>"
         <item name="dividerColor">@color/gray</item>
+        <item name="android:fontFamily">@font/nanum_square_round_family</item>
+        <item name="fontFamily">@font/nanum_square_round_family</item>
     </style>
 </resources>

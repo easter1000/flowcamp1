@@ -190,11 +190,11 @@ public class HomeFragment extends Fragment implements
         homeAdapter.setOnDeleteClickListener(this);
         homeAdapter.setOnEditClickListener(this);
 
-        MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(getContext(), MaterialDividerItemDecoration.VERTICAL);
+        /*MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(getContext(), MaterialDividerItemDecoration.VERTICAL);
         divider.setDividerInsetStart(32);
         divider.setDividerInsetEnd(32);
         divider.setLastItemDecorated(false);
-        recyclerView.addItemDecoration(divider);
+        recyclerView.addItemDecoration(divider);*/
     }
 
     @Override

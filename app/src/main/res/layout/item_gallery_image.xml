@@ -1,26 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.myapp.ui.gallery.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="1dp">
+    android:orientation="vertical"
+    android:padding="2dp"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <ImageView
-        android:id="@+id/imageView"
+    <com.example.myapp.ui.gallery.SquareFrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/placeholder" />
-    <RatingBar
-        android:id="@+id/ratingBar"
-        style="@style/RatingBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:numStars="5"
-        android:rating="4.5"
-        android:scaleX="0.7"
-        android:scaleY="0.7"
-        android:stepSize="0.5"
-        android:translationX="10dp"/>
+        android:layout_height="wrap_content">
 
-</com.example.myapp.ui.gallery.SquareFrameLayout>
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeholder" />
+        <RatingBar
+            android:id="@+id/ratingBar"
+            style="@style/RatingBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:numStars="5"
+            android:rating="4.5"
+            android:scaleX="0.7"
+            android:scaleY="0.7"
+            android:stepSize="0.5"
+            android:translationX="10dp"/>
+
+    </com.example.myapp.ui.gallery.SquareFrameLayout>
+
+    <LinearLayout
+        android:id="@+id/menuInfoContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingBottom="14dp">
+
+        <TextView
+            android:id="@+id/textViewMenuName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="맛있는 망고롤"
+            android:textColor="?attr/myTextColorPrimary"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/textViewRestaurantName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="성심당 본점"
+            android:textColor="?attr/myTextColorSecondary"
+            android:textSize="14sp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
