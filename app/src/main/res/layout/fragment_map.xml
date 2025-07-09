@@ -6,6 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".ui.map.MapFragment">
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_alignTop="@id/topBar"
+        android:layout_alignBottom="@id/topBar"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="15dp"
+        app:tint="@color/yellow_200"
+        android:src="@drawable/ic_long_logo" />
+
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
