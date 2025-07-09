@@ -97,9 +97,8 @@ public class SplashActivity extends AppCompatActivity {
 
     private synchronized void proceedToMain() {
         if (isMinTimeElapsed && isInitializationComplete) {
-            Log.d("SplashActivity", "Both conditions met. Proceeding to MainActivity.");
             startActivity(new Intent(SplashActivity.this, MainActivity.class));
-            finish(); // SplashActivity 종료
+            finish();
         } else {
             Log.d("SplashActivity", "Conditions not met yet. MinTime: " + isMinTimeElapsed + ", InitComplete: " + isInitializationComplete);
         }
