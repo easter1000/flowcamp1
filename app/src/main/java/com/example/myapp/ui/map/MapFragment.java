@@ -256,7 +256,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
 
         restaurantName.setText(restaurant.name);
-        restaurantType.setText(Converters.fromCuisine(restaurant.cuisineType));
+        restaurantType.setText(restaurant.cuisineType.toString());
         restaurantLocation.setText(restaurant.location);
         expandableContainer.setVisibility(View.VISIBLE);
         populateImages(menus, linearLayoutImages, requireContext());

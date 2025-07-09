@@ -209,7 +209,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             }
 
             textViewRestaurantName.setText(restaurant.name);
-            textViewRestaurantType.setText(Converters.fromCuisine(restaurant.cuisineType));
+            textViewRestaurantType.setText(restaurant.cuisineType.toString());
             textViewRestaurantLocation.setText(restaurant.detailedLocation.isEmpty()?restaurant.location:restaurant.location + " " + restaurant.detailedLocation);
 
             final int position = getBindingAdapterPosition();

@@ -38,7 +38,7 @@
 
     <RatingBar
         android:id="@+id/md_rating"
-        style="@style/RatingBar"
+        style="@style/CustomRatingBarLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:numStars="5"
