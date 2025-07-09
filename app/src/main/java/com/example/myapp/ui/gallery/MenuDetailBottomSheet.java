@@ -72,19 +72,11 @@ public class MenuDetailBottomSheet extends BottomSheetDialogFragment {
         }
 
         btnEdit.setOnClickListener(v1 -> {
-            new AlertDialog.Builder(requireContext())
-                    .setMessage("수정하시겠습니까?")
-                    .setPositiveButton("수정", (dialog, which) -> {
-                        AddMenuDialogFragment editDialog = AddMenuDialogFragment.newInstanceForEdit(menuId, (context) -> {
-                            Toast.makeText(context, "메뉴가 수정되었습니다.", Toast.LENGTH_SHORT).show();
-                        });
-
-                        editDialog.show(getParentFragmentManager(), "edit_menu_dialog");
-
-                        dismiss();
-                    })
-                    .setNegativeButton("취소", null)
-                    .show();
+            AddMenuDialogFragment editDialog = AddMenuDialogFragment.newInstanceForEdit(menuId, (context) -> {
+                Toast.makeText(context, "메뉴가 수정되었습니다.", Toast.LENGTH_SHORT).show();
+            });
+            editDialog.show(getParentFragmentManager(), "edit_menu_dialog");
+            dismiss();
         });
 
         btnDelete.setOnClickListener(v2 -> {
