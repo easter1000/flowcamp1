@@ -1,165 +1,129 @@
-🍽️ FlowCamp1 ― Android 맛집/메뉴 탐색 & 관리 애플리케이션
-> FlowCamp1 은 사용자가 주변 식당을 탐색하고 메뉴 – 리뷰를 기록하며, Google Maps 기반 지도와 갤러리형 메뉴 보드, 리스트·필터·정렬 기능을 제공하는 전체 오프라인-1st 맛집 관리 앱입니다.
-> Android 14(API 36) / Java 11 환경에서 제작되었으며, Room-DB + LiveData + ViewModel 구조를 바탕으로 깔끔한 MVVM 지향 아키텍처로 구현되었습니다.
+# 🍽️ 맛카 (Mat-car) ― 나만의 맛집 아카이빙 도우미
 
----
+> 내가 방문한 맛집, 먹었던 메뉴들을 손쉽게 기록하고 관리할 수 있는 개인 맞춤형 맛집 플랫폼입니다.
 
-0. 목차
-1. 주요 화면 흐름
-2. 핵심 기능 상세
-3. 데이터 모델
-4. 기술 스택 & 아키텍처
-5. 프로젝트 구조
-6. 빌드 & 실행
-7. 향후 개선 아이디어
-8. 라이선스
+<br>
 
----
+## 🛠️ 개발 환경 (Environment)
+- **OS:** Android 14 (API 36)
+- **Language:** Java 11
 
-1. 주요 화면 흐름
-단계 | 화면 | 설명 | 파일(주요 클래스)
----- | ---- | ---- | -----------------
-① | Splash | 첫 실행 시 스플래시 애니메이션; 위치·저장공간 등 필수 권한 요청 | SplashActivity
-② | MainActivity | BottomNavigationView 로 3 개의 탭(Home·Gallery·Map) 전환 | MainActivity
-③ | Home 탭 | 식당 리스트(RecyclerView); 필터(CuisineType Spinner)·정렬(Dialog)·검색; 빈 화면 안내 레이아웃 | HomeFragment, HomeAdapter
-④ | Gallery 탭 | 메뉴 보드(GridLayout); 메뉴 카드 클릭 → 상세 BottomSheet | GalleryFragment, MenuDetailBottomSheet
-⑤ | Map 탭 | Google Maps & Places SDK; 식당 마커 표시 및 하이라이트; 현재 위치·Zoom·Marker 클릭 시 하단 카드 | MapFragment
-⑥ | Add Restaurant/Menu | 커스텀 다이얼로그(DialogFragment) 2종; Place Picker Activity 호출 → 위·경도 자동 입력; 갤러리/카메라 이미지 선택, Glide 미리보기 | AddRestaurantDialogFragment, AddMenuDialogFragment, PlacePickerActivity
+<br>
 
----
+## 📝 목차 (Table of Contents)
+1. [팀원 소개](#-팀원-소개-team)
+2. [주요 화면 흐름](#-주요-화면-흐름-main-flow)
+3. [핵심 기능 상세](#-핵심-기능-상세-core-features)
+4. [APK 다운로드](#-apk-다운로드)
 
-2. 핵심 기능 상세
+<br>
 
-2-1. 스플래시 & 권한 관리
-기능 | 상세
---- | ---
-SplashScreen API | Android 12 이상 SplashScreen Compat 사용, 브랜딩 이미지 페이드-인
-런타임 권한 | ActivityCompat.requestPermissions → 결과 콜백에서 미승인 시 Alert Dialog 로 가이드
-Overlay 권한 체크 | 다중 창(오버레이) 기능을 위한 ACTION_MANAGE_OVERLAY_PERMISSION 인텐트 처리
+## 🧑‍🤝‍🧑 팀원 소개 (Team)
 
-2-2. Home Fragment – 레스토랑 탐색
-- LiveData 관찰로 실시간 리스트 반영
-- CuisineType 필터: ALL / KOREAN / WESTERN / CHINESE / JAPANESE / OTHER
-- 정렬 옵션:
-  인덱스 | Enum | 의미
-  ------ | ---- | ----
-  0 | DATE_DESC | 최근 등록순 ↓
-  1 | DATE_ASC | 과거 등록순 ↑
-  2 | DISTANCE_ASC | 현 위치 ↔ 거리순 ↑
-  3 | NAME_ASC / DESC | 이름 가나다·역순
-  5 | RATING_ASC / DESC | 평점 낮→높·높→낮
-- Empty State: DB 비어있을 때 empty_restaurant.xml 표시
-- 애니메이션: 리스트 확장/축소 시 AnimationUtils.expand()/collapse()로 부드러운 ValueAnimator 처리
+- **박세린** - 고려대학교 23학번 (04년생)
+- **석인호** - KAIST 23학번 (05년생)
 
-2-3. Gallery Fragment – 메뉴 갤러리
-- GridLayoutManager(2-열), 카드 스타일 item_menuboard.xml
-- Glide v4 로 Lazy-Loading 이미지
-- BottomSheet (MenuDetailBottomSheet):
-  메뉴 사진·이름·가격·평점(★)·리뷰·소속 식당명을 한눈에
-  즐겨찾기/공유 버튼 예비 슬롯 포함
-- Sort/Filter 재사용: Home 탭 로직 재활용 (SRP 준수)
+<br>
 
-2-4. Map Fragment – Google Maps 통합
-요소 | 내용
----- | ----
-지도 초기화 | MapsInitializer.initialize() + 커스텀 map_style.json 적용(POI 라벨 최소화)
-마커 관리 | HashMap<Long, Marker> 로 Restaurant ID ↔ Marker 매핑, 라이프사이클에 안전한 클린-업
-현재 위치 | FusedLocationProviderClient → 지도 My Location 버튼 및 거리 계산
-Restaurant 선택 | 마커 클릭 → ViewModel 에 선택 값 저장 → 하단 카드 뷰 노출 & Marker 색상 변화
-PlacePicker 연동 | 지도 화면에서 “추가” 누르면 별도 PlacePickerActivity 실행 (Autocomplete + 드래그 핀)
+## 🏞️ 주요 화면 흐름 (Main Flow)
 
-2-5. 데이터 입력 다이얼로그
-- AddRestaurantDialogFragment:
-  1. 식당명·카테고리 입력 → 2. 주소 검색(PlacePicker) → 3. 저장
-- AddMenuDialogFragment:
-  1. 메뉴명·가격·평점·리뷰 입력 → 2. 갤러리/카메라 이미지 선택 → 3. 저장
-- 모든 Insert 작업은 DBRepository.io(Executor) 비동기 스레드에서 수행 후 Main-Thread Handler로 콜백
+### 1. 스플래시 (Splash Screen)
+- 앱 구동 시 필요한 데이터 로딩, API 설정, 권한 요청을 수행합니다.
+- 모든 준비가 완료되면 메인 화면으로 전환됩니다.
 
----
+### 2. 메인 화면 (Main Screen)
+메인 화면은 하단 네비게이션 바를 통해 **맛집 탭**, **메뉴 탭**, **지도 탭** 세 가지 주요 기능으로 접근할 수 있습니다.
 
-3. 데이터 모델
-Entity | 주요 필드 | 설명
------- | -------- | ----
-Restaurant | id, name, location, detailedLocation, cuisineType, latitude, longitude | 식당 기본 정보
-MenuItem | id, restaurant_id(fk), menuName, imageUri, price, rating, review | 메뉴 단위 리뷰
-CuisineType (Enum) | displayName(한글) | 카테고리 필터용
-SortOrder (Enum) | - | 리스트 정렬 내부 로직
+- **맛집 탭 (Restaurants Tab)**
+    - 저장한 맛집들이 리스트 형태로 표시됩니다.
+    - 각 항목에는 식당 이름, 종류, 평균 별점, 거리, 주소가 기본 정보로 나타납니다.
+    - 리스트를 터치하면 펼쳐지며 '메뉴판 보기' 버튼과 기록된 메뉴 사진들을 확인할 수 있습니다.
 
-Room
-@Database(entities = {Restaurant.class, MenuItem.class}, version = 1)
-public abstract class AppDatabase extends RoomDatabase { ... }
+- **메뉴 탭 (Menu Gallery Tab)**
+    - 등록한 모든 메뉴 사진들이 갤러리 형태로 나타납니다.
+    - 사진을 클릭하면 메뉴명, 가격, 한줄평, 가게 정보(이름, 주소)를 볼 수 있습니다.
 
-- TypeConverter Converters – Uri ↔ String, CuisineType ↔ String
+- **지도 탭 (Map Tab)**
+    - 저장한 맛집들이 지도 위에 마커로 표시되어 위치를 한눈에 파악하기 용이합니다.
+    - 마커를 클릭하면 해당 맛집의 정보와 메뉴 정보가 카드 형태로 나타납니다.
 
----
+### 3. 맛집 등록 (Add Restaurant)
+- **맛집 탭** 또는 **지도 탭**의 `+` 버튼을 통해 맛집을 등록할 수 있습니다.
+- **수동 입력:** 이름과 주소를 직접 입력하여 등록합니다.
+- **지도에서 검색:**
+    - '지도에서 위치 검색' 버튼을 누르면 내 위치 중심의 지도가 나타납니다.
+    - 지도에서 위치를 직접 선택하거나 장소를 검색하면, 해당 위치의 정보 카드가 표시됩니다.
+    - '이 위치로 맛집 등록하기' 버튼을 누르면 주소와 이름이 자동으로 입력됩니다.
+- 맛집 등록 즉시 **맛집 탭**과 **지도 탭**에 반영됩니다.
 
-4. 기술 스택 & 아키텍처
-Layer | 라이브러리/기술 | 비고
------ | -------------- | ----
-UI | Material 3, ViewBinding, Glide, BottomSheetDialog |
-Presentation | ViewModel, LiveData, Navigation Component | 단일 Activity - 멀티 Fragment 패턴
-Domain/Repository | 자체 DBRepository | 비동기 I/O + MainThread 콜백
-Data | Room Database, Gson(시드 JSON 파싱) | 내부 SQLite
-Map/Location | Google Maps SDK v3.5, Places API, Fused Location |
-Etc. | SplashScreen API, ValueAnimator |
+### 4. 메뉴 추가 (Add Menu)
+- **메뉴 탭**의 `+` 버튼을 통해 메뉴를 추가합니다.
+- 카메라로 사진을 직접 찍거나 갤러리에서 사진을 선택하면 메뉴 추가 다이얼로그가 나타납니다.
+- 다이얼로그에서 메뉴명, 맛집명, 한줄평(선택), 가격, 별점을 입력하여 메뉴를 추가합니다.
+- 추가된 메뉴는 즉시 **메뉴 탭**과 해당 맛집의 상세 정보에서 확인할 수 있습니다.
 
-아키텍처 패턴: MVVM (+ Repository)
-의존성 주입은 사용하지 않았으며, 규모 확대 시 Hilt 도입이 용이하도록 인터페이스 기반 설계.
+### 5. 수정 및 삭제 (Edit / Delete)
+- 앱 내 정보에 접근할 수 있는 모든 곳(3개의 탭, 상세 정보, 카드뷰 등)에서 수정 및 삭제가 가능합니다.
+- 메뉴 정보 수정 시, 연결된 맛집명은 변경할 수 없습니다.
+- 메뉴판 이미지는 **맛집 탭 → 메뉴판 보기 → 메뉴판 수정**을 통해 변경할 수 있습니다.
 
----
+<br>
 
-5. 프로젝트 구조
-flowcamp1/
- ├─ app/
- │  ├─ src/main/
- │  │  ├─ java/com/example/myapp/
- │  │  │  ├─ ui/
- │  │  │  │  ├─ home/         # HomeFragment·어댑터
- │  │  │  │  ├─ gallery/      # GalleryFragment·BottomSheet·AddDialogs
- │  │  │  │  └─ map/          # MapFragment·PlacePicker
- │  │  │  ├─ data/
- │  │  │  │  ├─ dao/          # Room DAO
- │  │  │  │  ├─ db/           # AppDatabase & Converters
- │  │  │  │  └─ *.java        # Entity·Enum
- │  │  │  ├─ animations/      # View expand/collapse util
- │  │  │  └─ MainActivity.java
- │  │  ├─ res/
- │  │  │  ├─ layout/          # XML 레이아웃 15 종
- │  │  │  ├─ navigation/      # mobile_navigation.xml
- │  │  │  ├─ raw/map_style.json
- │  │  │  └─ values*          # 기본·다국어 스트링
- ├─ build.gradle.kts
- └─ settings.gradle.kts
+## ✨ 핵심 기능 상세 (Core Features)
 
----
+### 1. 스플래시 & 권한 관리
+- `SplashScreen API`를 사용하여 Cold Start 시 초기 화면을 구성했습니다.
+- 앱 실행 시 500ms의 애니메이션과 함께 Google Map API 및 Places API를 초기화합니다.
+- 위치 정보 권한이 없는 경우, 이 단계에서 사용자에게 권한을 요청합니다.
 
-6. 빌드 & 실행
-1. 필수 도구
-   - Android Studio <2025> Hedgehog 이상
-   - JDK 11
-2. Google API 키 등록
-   1. secrets.properties 파일 생성 또는 편집
-   2. 다음 두 항목을 입력
-      GOOGLE_MAPS_API_KEY=AIzaSy...
-      GOOGLE_PLACES_API_KEY=AIzaSy...
-3. 의존성 다운로드 & 빌드
-   ./gradlew clean assembleDebug
-4. 실행
-   - USB/Emulator → Run ‘app’
-   - 최초 실행 시 위치·저장공간 권한 허용 필요
+### 2. 맛집 탭 (Home Fragment)
+- **실시간 데이터 업데이트**: 맛집 정보를 `LiveData`로 관찰하여 데이터 변경이 즉시 UI에 반영되도록 구현했습니다.
+- **데이터베이스 (Restaurant DB)**
+    - `id` (PK, Auto-generate), `name`, `menuBoardUri`, `location`, `detailedLocation`, `cuisineType`, `latitude`, `longitude`
+- **음식 종류 (Cuisine Type)**: `한식`, `양식`, `중식`, `일식`, `기타` 5가지 유효한 카테고리로 분류됩니다. (DB상에는 7종 존재)
+- **정렬 및 필터링**
+    - **정렬 옵션**: 등록순, 거리순, 이름순, 평점순 정렬을 지원합니다.
+    - **필터링**: 전체 및 5가지 음식 종류별로 맛집을 필터링해서 볼 수 있습니다.
+- **UI/UX 개선**
+    - 등록된 맛집이 없을 경우, 안내 캐릭터가 포함된 빈 화면을 표시합니다.
+    - 리스트 확장/축소 시 자연스러운 `expand/collapse` 애니메이션을 적용했습니다.
+    - 상세 정보의 메뉴를 클릭하면 BottomSheet 형태로 메뉴 상세 정보가 나타납니다.
+    - 현재 위치를 가져오지 못하면 거리가 표시되지 않으며, 메뉴판이 없으면 '메뉴판 보기' 버튼이 숨겨집니다.
+    - **탭 이동 시 상태 유지**: 정렬 및 필터링, 리스트 열림 상태는 다른 탭으로 이동했다가 돌아와도 그대로 유지됩니다.
 
----
+### 3. 메뉴 탭 (Gallery Fragment)
+- **실시간 데이터 업데이트**: 메뉴 정보 역시 `LiveData`를 통해 실시간으로 UI에 반영됩니다.
+- **데이터베이스 (MenuItem DB)**
+    - `id` (PK, Auto-generate), `menuName`, `imageUri`, `rating`, `review`, `restaurantId` (FK), `price`
+    - `On Delete Cascade` 옵션을 적용하여, 연결된 맛집(Restaurant)이 삭제되면 해당 맛집의 메뉴들도 함께 삭제됩니다.
+- **정렬 및 필터링**
+    - **정렬 옵션**: 등록순, 이름순, 평점순, 가격순 정렬을 지원합니다.
+    - **필터링**: 맛집 탭과 동일하게 음식 종류별 필터링이 가능합니다.
+- **UI/UX 개선**
+    - 등록된 메뉴가 없을 경우, 안내 캐릭터가 포함된 빈 화면을 표시합니다.
+    - 메뉴 클릭 시 상세 정보가 담긴 BottomSheet가 나타납니다.
+    - **보기 모드 변경**: 그리드 아이콘을 통해 한 줄에 2개 또는 3개의 메뉴를 표시하는 모드를 토글할 수 있습니다. (2개 모드에서는 메뉴명과 맛집명이 추가로 보임)
+    - **탭 이동 시 상태 유지**: 정렬 및 필터링 상태는 다른 탭으로 이동했다가 돌아와도 그대로 유지됩니다.
 
-7. 향후 개선 아이디어
-카테고리 | 제안
--------- | ----
-UX | 다크 모드 대응; 마커 클러스터링 & Heatmap 시각화
-데이터 | Cloud Sync(Firebase Cloud Store); AI 리뷰 요약 & 추천 메뉴
-구조 | DI(Hilt) 도입, Clean Architecture 계층화
-테스트 | JUnit + Espresso UI 테스트 보강
-CI/CD | GitHub Actions → Firebase App Distribution 자동 배포
+### 4. 지도 탭 (Map Fragment)
+- **Custom Map**: 기본 Google Map에서 비즈니스 POI를 제외한 라벨을 비활성화하여 깔끔한 지도를 제공합니다.
+- **마커 및 지도 시점**
+    - 저장된 맛집은 연주황색 마커로 표시됩니다.
+    - 지도 초기 시점은 모든 마커가 가장 잘 보이도록 자동으로 설정됩니다.
+    - 마커 클릭 시, 해당 맛집 위치로 지도가 확대(줌 레벨 17)되며 상세 정보 카드가 나타납니다.
+    - 필터링 시, 필터링된 마커들이 잘 보이도록 지도 시점이 재설정됩니다.
+- **POI 연동 맛집 등록**: 지도 위의 POI 라벨을 클릭하면 장소 정보를 확인하고, 버튼 하나로 간편하게 맛집을 등록할 수 있습니다.
 
----
+### 5. 데이터 입력 다이얼로그 (Dialogs)
+- **입력 유효성 검사**: 필수 필드를 채우지 않거나 최대 글자 수를 초과하면 에러 메시지가 표시됩니다.
+- **버튼 활성화/비활성화**: 모든 입력 조건이 만족될 때만 '저장' 버튼이 활성화(노란색)되어 사용자 실수를 방지합니다.
+- **'추가' 및 '수정' 모드**:
+    - **`AddRestaurantDialogFragment`**: 맛집 추가 및 수정
+    - **`AddMenuDialogFragment`**: 메뉴 추가 및 수정
+    - 수정 모드에서는 기존에 등록된 정보가 채워진 상태로 다이얼로그가 열립니다.
+- **비동기 처리**: 모든 데이터베이스 Insert 작업은 `Executor`를 사용한 비동기 스레드에서 처리 후, `Handler`를 통해 Main 스레드로 결과를 콜백하여 UI를 안전하게 업데이트합니다.
 
-8. 라이선스
-본 저장소는 MIT License를 따릅니다. 자세한 내용은 LICENSE 파일을 확인하세요.
+<br>
+
+## 📲 APK 다운로드
+> [다운로드](https://drive.google.com/file/d/1hqpBxtxvWlzr6yBqzPzfLHLeG9gbO47X/view?usp=sharing)
