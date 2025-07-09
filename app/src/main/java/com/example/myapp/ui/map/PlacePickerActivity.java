@@ -105,7 +105,7 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
 
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG));
         autocompleteFragment.setCountry("KR");
-        autocompleteFragment.setHint("가게 이름 검색");
+        autocompleteFragment.setHint("맛집 이름 검색");
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -193,7 +193,7 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
                 })
                 .addOnFailureListener(e -> {
                     Log.e("MapPlacePicker", "Place not found.", e);
-                    Toast.makeText(this, "가게 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "맛집 정보를 불러오지 못했습니다.", Toast.LENGTH_SHORT).show();
                 });
     }
 

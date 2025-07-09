@@ -246,7 +246,7 @@ public class AddMenuDialogFragment extends DialogFragment {
                 }
             } else {
                 new AlertDialog.Builder(requireContext())
-                        .setMessage("“" + restName + "”은(는) 등록되지 않은 가게입니다.\n새로 생성하시겠습니까?")
+                        .setMessage("“" + restName + "”은(는) 등록되지 않은 맛집입니다.\n새로 생성하시겠습니까?")
                         .setPositiveButton("예", (d, w) -> {
                             AddRestaurantDialogFragment newRestaurantDialog =
                                     AddRestaurantDialogFragment.newInstanceForCreate(restName);
