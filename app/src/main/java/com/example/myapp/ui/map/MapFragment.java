@@ -250,9 +250,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         float averageRating;
         if (ratingCount > 0) {
             averageRating = ratingSum / ratingCount;
-            restaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
+            restaurantRating.setText(String.format(Locale.ROOT, "%.1f", averageRating));
         } else {
-            restaurantRating.setText("⭐");
+            restaurantRating.setText("");
         }
 
         restaurantName.setText(restaurant.name);

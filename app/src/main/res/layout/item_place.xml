@@ -48,13 +48,20 @@
             android:layout_marginTop="4dp"
             android:orientation="horizontal">
 
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/star_full_15"
+                android:scaleType="centerInside"
+                android:layout_marginEnd="4dp"/>
+
             <TextView
                 android:id="@+id/textViewAverageRating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/myTextColorSecondary"
                 android:textSize="14sp"
-                tools:text="⭐ 4.5" />
+                tools:text="4.5" />
 
             <TextView
                 android:id="@+id/textViewRatingAddressSeparator"

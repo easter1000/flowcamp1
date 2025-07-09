@@ -203,9 +203,9 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.RestaurantView
             float averageRating;
             if (ratingCount > 0) {
                 averageRating = ratingSum / ratingCount;
-                textViewRestaurantRating.setText(String.format(Locale.ROOT, "⭐ %.1f", averageRating));
+                textViewRestaurantRating.setText(String.format(Locale.ROOT, "%.1f", averageRating));
             } else {
-                textViewRestaurantRating.setText("⭐");
+                textViewRestaurantRating.setText("");
             }
 
             textViewRestaurantName.setText(restaurant.name);
