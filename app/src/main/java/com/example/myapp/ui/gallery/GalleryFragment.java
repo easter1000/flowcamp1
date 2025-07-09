@@ -245,7 +245,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
                         launchCamera();
-                    } else { // 갤러리 선택
+                    } else {
                         launchGallery();
                     }
                 })
@@ -390,6 +390,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
             public LinearLayout menuInfoContainer;
             public TextView textViewMenuName;
             public TextView textViewRestaurantName;
+            public TextView menuName;
             public ImageViewHolder(View itemView) {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.imageView);
@@ -398,6 +399,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                 menuInfoContainer = itemView.findViewById(R.id.menuInfoContainer);
                 textViewMenuName = itemView.findViewById(R.id.textViewMenuName);
                 textViewRestaurantName = itemView.findViewById(R.id.textViewRestaurantName);
+                menuName = itemView.findViewById(R.id.menu_name);
             }
         }
     }
