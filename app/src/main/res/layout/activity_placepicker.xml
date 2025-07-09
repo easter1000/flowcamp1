@@ -94,7 +94,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/tv_place_address"
                 android:layout_marginTop="12dp"
-                android:text="이 위치로 가게 등록하기" />
+                android:text="이 위치로 맛집 등록하기" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

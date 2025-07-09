@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="가게 검색">
+            android:hint="맛집 검색">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/ar_restaurant"

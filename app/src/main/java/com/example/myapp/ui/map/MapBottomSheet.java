@@ -67,7 +67,7 @@ public class MapBottomSheet extends BottomSheetDialogFragment {
         long restaurantId = (getArguments() != null) ? getArguments().getLong(ARG_RESTAURANT_ID, -1) : -1;
 
         if (restaurantId == -1) {
-            Toast.makeText(getContext(), "가게 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "맛집 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show();
             dismiss();
             return v;
         }
