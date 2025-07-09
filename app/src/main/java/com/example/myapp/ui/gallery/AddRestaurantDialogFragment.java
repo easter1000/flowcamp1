@@ -151,7 +151,7 @@ public class AddRestaurantDialogFragment extends DialogFragment {
             btnSelect.setText("수정");
             loadRestaurantDataForEdit();
         } else {
-            btnSelect.setText("추가");
+            btnSelect.setText("등록");
             Bundle args = getArguments();
             if (args != null) {
                 if (args.getBoolean("focus_on_name", false)) {

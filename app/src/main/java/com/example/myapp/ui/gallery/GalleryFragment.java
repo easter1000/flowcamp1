@@ -303,7 +303,6 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         private final Context context;
         private List<MenuItem> data;
         private final OnMenuClickListener listener;
-        private SortOrder sortOrder = SortOrder.DATE_DESC;
         private boolean isInfoView;
         private final GalleryViewModel viewModel;
         private final LifecycleOwner lifecycleOwner;
@@ -322,7 +321,6 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         }
 
         public void sort(SortOrder order) {
-            sortOrder = order;
             if (data == null) return;
             Comparator<MenuItem> comp;
             switch (order) {
@@ -361,6 +359,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                     .into(holder.imageView);
             holder.itemView.setOnClickListener(v -> listener.onMenuClicked(data.get(position)));
             holder.ratingBar.setRating(data.get(position).rating);
+            holder.menuName.setText(data.get(position).menuName);
 
             if (isInfoView) {
                 holder.menuInfoContainer.setVisibility(View.VISIBLE);
