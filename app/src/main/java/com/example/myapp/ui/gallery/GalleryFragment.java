@@ -364,15 +364,18 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
             if (isInfoView) {
                 holder.menuInfoContainer.setVisibility(View.VISIBLE);
-                holder.textViewMenuName.setText(data.get(position).menuName);
+                holder.ratingBar.setVisibility(View.GONE);
+                holder.ratingBarLarge.setVisibility(View.VISIBLE);
 
                 viewModel.getRestaurantById(menu.restaurantId).observe(lifecycleOwner, restaurant -> {
                     holder.textViewRestaurantName.setText(restaurant.name);
                 });
             } else {
-                holder.itemView.findViewById(R.id.menuInfoContainer).setVisibility(View.GONE);
+                holder.menuInfoContainer.setVisibility(View.GONE);
+                holder.ratingBar.setVisibility(View.VISIBLE);
+                holder.ratingBarLarge.setVisibility(View.GONE);
             }
-            holder.menuName.setText(data.get(position).menuName);
+            holder.textViewMenuName.setText(data.get(position).menuName);
         }
 
         @Override
@@ -383,7 +386,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         public static class ImageViewHolder extends RecyclerView.ViewHolder {
             public ImageView imageView;
             public RatingBar ratingBar;
-            public TextView menuName;
+            public RatingBar ratingBarLarge;
             public LinearLayout menuInfoContainer;
             public TextView textViewMenuName;
             public TextView textViewRestaurantName;
@@ -391,9 +394,9 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                 super(itemView);
                 imageView = itemView.findViewById(R.id.imageView);
                 ratingBar = itemView.findViewById(R.id.ratingBar);
+                ratingBarLarge = itemView.findViewById(R.id.ratingBarLarge);
                 menuInfoContainer = itemView.findViewById(R.id.menuInfoContainer);
                 textViewMenuName = itemView.findViewById(R.id.textViewMenuName);
-                menuName = itemView.findViewById(R.id.menu_name);
                 textViewRestaurantName = itemView.findViewById(R.id.textViewRestaurantName);
             }
         }
