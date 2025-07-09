@@ -125,5 +125,8 @@
 
 <br>
 
+## 시연 영상
+> [영상 보기](https://youtube.com/shorts/oJj2K_SgdtU?feature=share)
+
 ## 📲 APK 다운로드
 > [다운로드](https://drive.google.com/file/d/1hqpBxtxvWlzr6yBqzPzfLHLeG9gbO47X/view?usp=sharing)
