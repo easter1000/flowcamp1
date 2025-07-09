@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
@@ -14,17 +15,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Gallery;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
@@ -38,18 +42,32 @@ import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
 import com.example.myapp.data.SortOrder;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class GalleryFragment extends Fragment implements AddMenuDialogFragment.OnMenuCreatedListener {
-    private static GalleryViewModel viewModel;
+    private GalleryViewModel viewModel;
     private RecyclerView recyclerView;
     private GalleryAdapter adapter;
     private CuisineType current = CuisineType.ALL;
     private int selectedSortIndex = 0;
     private View emptyHomeView;
+    private Uri photoUri;
+    private ActivityResultLauncher<Intent> pickFromGalleryLauncher;
+    private ActivityResultLauncher<Uri> takePictureLauncher;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        registerLaunchers();
+    }
     private boolean isInfoView = false;
 
     @Nullable
@@ -87,13 +105,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         ImageButton btnSort = view.findViewById(R.id.btn_sort);
         ImageButton btnToggle = view.findViewById(R.id.btn_toggle_view);
 
-        btnAdd.setOnClickListener(v -> {
-            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            i.addCategory(Intent.CATEGORY_OPENABLE);
-            i.setType("image/*");
-            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-            pickMediaLauncher.launch(i);
-        });
+        btnAdd.setOnClickListener(v -> showImageSourceDialog());
         btnSort.setOnClickListener(v -> {
             final String[] items = {"최신순", "오래된순", "이름 A-Z", "이름 Z-A", "별점 높은순", "별점 낮은순", "가격 높은순", "가격 낮은순"};
 
@@ -165,11 +177,25 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
         viewModel.getMenuItems().observe(getViewLifecycleOwner(), menus -> {
             toggleVisibility();
             adapter.setData(menus);
+            adapter.sort(getSortOrderFromIndex(selectedSortIndex));
         });
 
         viewModel.setFilter(current);
 
         toggleVisibility();
+    }
+
+    private SortOrder getSortOrderFromIndex(int index) {
+        switch (index) {
+            case 0: return SortOrder.DATE_DESC;
+            case 1: return SortOrder.DATE_ASC;
+            case 2: return SortOrder.NAME_ASC;
+            case 3: return SortOrder.NAME_DESC;
+            case 4: return SortOrder.RATING_DESC;
+            case 5: return SortOrder.RATING_ASC;
+            case 6: return SortOrder.PRICE_DESC;
+            case 7: default: return SortOrder.PRICE_ASC;
+        }
     }
 
     private void toggleVisibility() {
@@ -188,20 +214,81 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                 .show(getChildFragmentManager(), "detail");
     }
 
-    private ActivityResultLauncher<Intent> pickMediaLauncher =
-            registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    res -> {
-                        if (res.getResultCode() == Activity.RESULT_OK && res.getData() != null) {
-                            Uri uri = res.getData().getData();
-                            if (uri != null) {
-                                requireContext().getContentResolver().takePersistableUriPermission(
-                                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                AddMenuDialogFragment.newInstanceForCreate(uri, this)
-                                        .show(getChildFragmentManager(), "addMenu");
+    private void registerLaunchers() {
+        pickFromGalleryLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.StartActivityForResult(),
+                        res -> {
+                            if (res.getResultCode() == Activity.RESULT_OK && res.getData() != null) {
+                                Uri uri = res.getData().getData();
+                                if (uri != null) {
+                                    requireContext().getContentResolver().takePersistableUriPermission(
+                                            uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                    showAddMenuDialog(uri);
+                                }
                             }
-                        }
-                    });
+                        });
+        takePictureLauncher = registerForActivityResult(
+                new ActivityResultContracts.TakePicture(),
+                success -> {
+                    if (success && photoUri != null) {
+                        showAddMenuDialog(photoUri);
+                    }
+                }
+        );
+    }
+
+    private void showImageSourceDialog() {
+        final String[] options = {"카메라로 촬영", "갤러리에서 선택"};
+        new AlertDialog.Builder(requireContext())
+                .setTitle("사진 추가")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        launchCamera();
+                    } else { // 갤러리 선택
+                        launchGallery();
+                    }
+                })
+                .show();
+    }
+
+    private void launchGallery() {
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("image/*");
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        pickFromGalleryLauncher.launch(i);
+    }
+
+    private void launchCamera() {
+        try {
+            File photoFile = createImageFile();
+            photoUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.example.myapp.fileprovider",
+                    photoFile
+            );
+            takePictureLauncher.launch(photoUri);
+        } catch (IOException ex) {
+            Toast.makeText(requireContext(), "이미지 파일을 생성하는 데 실패했습니다.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.KOREA).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile(
+                imageFileName,
+                ".jpg",
+                storageDir
+        );
+    }
+
+    private void showAddMenuDialog(Uri uri) {
+        AddMenuDialogFragment.newInstanceForCreate(uri, this)
+                .show(getChildFragmentManager(), "addMenu");
+    }
 
     @Override
     public void onCreated(MenuItem menu, Restaurant rest) {
@@ -232,7 +319,6 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
 
         public void setData(List<MenuItem> menus) {
             this.data = menus;
-            sort(sortOrder);
         }
 
         public void sort(SortOrder order) {
@@ -280,7 +366,6 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                 holder.menuInfoContainer.setVisibility(View.VISIBLE);
                 holder.ratingBar.setVisibility(View.GONE);
                 holder.ratingBarLarge.setVisibility(View.VISIBLE);
-                holder.textViewMenuName.setText(data.get(position).menuName);
 
                 viewModel.getRestaurantById(menu.restaurantId).observe(lifecycleOwner, restaurant -> {
                     holder.textViewRestaurantName.setText(restaurant.name);
@@ -290,6 +375,7 @@ public class GalleryFragment extends Fragment implements AddMenuDialogFragment.O
                 holder.ratingBar.setVisibility(View.VISIBLE);
                 holder.ratingBarLarge.setVisibility(View.GONE);
             }
+            holder.textViewMenuName.setText(data.get(position).menuName);
         }
 
         @Override

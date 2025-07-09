@@ -13,7 +13,9 @@ import com.example.myapp.data.MenuItem;
 import com.example.myapp.data.Restaurant;
 import com.example.myapp.ui.DBRepository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class HomeViewModel extends AndroidViewModel {
 
@@ -21,6 +23,7 @@ public class HomeViewModel extends AndroidViewModel {
     private final LiveData<List<Restaurant>> restaurants;
     private final LiveData<List<MenuItem>> menuItems;
     private final MutableLiveData<CuisineType> filterType = new MutableLiveData<>();
+    private final Set<Long> openedItems = new HashSet();
 
     public HomeViewModel(@NonNull Application app) {
         super(app);
@@ -32,6 +35,7 @@ public class HomeViewModel extends AndroidViewModel {
     public LiveData<List<Restaurant>> getRestaurants() { return restaurants; }
 
     public LiveData<List<MenuItem>> getMenuItems() { return menuItems; }
+    public Set<Long> getOpenedItems() { return openedItems; }
 
     public void setFilter(CuisineType type) {
         filterType.setValue(type);
@@ -41,24 +45,8 @@ public class HomeViewModel extends AndroidViewModel {
         repo.deleteRestaurant(restaurant);
     }
 
-    /*
-    private void loadPlacesData() {
-        List<Place> dummyList = new ArrayList<>();
-        dummyList.add(new Place("식당1", "주소1", "카테고리1", 0));
-        dummyList.add(new Place("식당2", "주소2", "카테고리2", 1));
-        dummyList.add(new Place("식당3", "주소3", "카테고리3", 2));
-        dummyList.add(new Place("식당1", "주소1", "카테고리1", 3));
-        dummyList.add(new Place("식당2", "주소2", "카테고리2", 4));
-        dummyList.add(new Place("식당3", "주소3", "카테고리3", 5));
-        dummyList.add(new Place("식당1", "주소1", "카테고리1", 6));
-        dummyList.add(new Place("식당2", "주소2", "카테고리2", 1));
-        dummyList.add(new Place("식당3", "주소3", "카테고리3", 2));
-        dummyList.add(new Place("식당1", "주소1", "카테고리1", 3));
-        dummyList.add(new Place("식당2", "주소2", "카테고리2", 4));
-        dummyList.add(new Place("식당3", "주소3", "카테고리3", 5));
-        placesLiveData.setValue(dummyList);
-
+    public void updateRestaurant(Restaurant restaurant) {
+        repo.updateRestaurant(restaurant);
     }
-    */
 
 }

@@ -14,89 +14,99 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="?android:attr/selectableItemBackground"> <!-- 클릭 효과 (선택) -->
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
             android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/textViewPlaceName"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/myTextColorPrimary"
-                android:textSize="18sp"
-                tools:text="식당 이름" />
+                android:orientation="vertical"
+                android:layout_weight="1">
 
-            <TextView
-                android:id="@+id/textViewPlaceCategory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:textColor="?attr/myTextColorSecondary"
-                android:textSize="14sp"
-                tools:text="카테고리" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-        </LinearLayout>
+                    <TextView
+                        android:id="@+id/textViewPlaceName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/myTextColorPrimary"
+                        android:textSize="18sp"
+                        tools:text="식당 이름" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/textViewPlaceCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:textColor="?attr/myTextColorSecondary"
+                        android:textSize="14sp"
+                        tools:text="카테고리" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textViewAverageRating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/myTextColorSecondary"
+                        android:textSize="14sp"
+                        tools:text="⭐ 4.5" />
+
+                    <TextView
+                        android:id="@+id/textViewRatingAddressSeparator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/dot_separator"
+                        android:textColor="?attr/myTextColorSecondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/distanceTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textColor="?attr/myTextColorSecondary"
+                        android:textSize="14sp"
+                        tools:text="1.7km" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textViewPlaceAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/myTextColorSecondary"
+                    android:textSize="12sp"
+                    tools:text="식당 주소 123" />
+            </LinearLayout>
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:src="@drawable/star_full_15"
-                android:scaleType="centerInside"
-                android:layout_marginEnd="4dp"/>
-
-            <TextView
-                android:id="@+id/textViewAverageRating"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="?attr/myTextColorSecondary"
-                android:textSize="14sp"
-                tools:text="4.5" />
-
-            <TextView
-                android:id="@+id/textViewRatingAddressSeparator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/dot_separator"
-                android:textColor="?attr/myTextColorSecondary"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/distanceTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textColor="?attr/myTextColorSecondary"
-                android:textSize="14sp"
-                tools:text="1.7km" />
-
+                android:id="@+id/map_btn"
+                android:layout_width="37dp"
+                android:layout_height="37dp"
+                android:src="@drawable/button_map"
+                android:layout_gravity="center_vertical"/>
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/textViewPlaceAddress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="?attr/myTextColorSecondary"
-            android:textSize="12sp"
-            tools:text="식당 주소 123" />
 
         <LinearLayout
             android:id="@+id/expandableContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:orientation="vertical">
 
             <HorizontalScrollView
                 android:id="@+id/horizontalScrollViewImages"

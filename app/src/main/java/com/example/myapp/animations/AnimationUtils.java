@@ -16,7 +16,6 @@ public class AnimationUtils {
         Log.d("AnimationUtils", "expand() called. Target height: " + targetHeight);
 
         v.getLayoutParams().height = 0;
-        v.setVisibility(View.VISIBLE);
 
         ValueAnimator va = ValueAnimator.ofInt(0, targetHeight);
         va.addUpdateListener(animation -> {
@@ -42,13 +41,6 @@ public class AnimationUtils {
         va.addUpdateListener(animation -> {
             v.getLayoutParams().height = (Integer) animation.getAnimatedValue();
             v.requestLayout();
-        });
-
-        va.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                v.setVisibility(View.GONE);
-            }
         });
 
         va.setDuration(300);

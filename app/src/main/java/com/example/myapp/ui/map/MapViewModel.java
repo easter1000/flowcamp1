@@ -33,6 +33,10 @@ public class MapViewModel extends AndroidViewModel {
         return repo.getRestaurantWithMenus(restaurantId);
     }
 
+    public LiveData<Restaurant> getRestaurantById(long restaurantId) {
+        return repo.getRestaurantById(restaurantId);
+    }
+
     public void setFilter(CuisineType type) {
         filterType.setValue(type);
     }

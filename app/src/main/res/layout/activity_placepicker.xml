@@ -25,7 +25,7 @@
         android:id="@+id/card_place_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/btn_select_location"
+        android:layout_alignParentBottom="true"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
@@ -43,7 +43,7 @@
                 android:id="@+id/btn_close_card"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:src="@drawable/ic_close"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
@@ -54,25 +54,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:layout_toStartOf="@id/tv_place_category"
+                android:layout_toStartOf="@id/btn_close_card"
+                android:layout_marginEnd="8dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="?attr/myTextColorPrimary"
                 tools:text="가게 이름" />
-
-            <TextView
-                android:id="@+id/tv_place_category"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/btn_close_card"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="5dp"
-                android:layout_alignBaseline="@id/tv_place_name"
-                android:textSize="13sp"
-                android:textColor="?attr/myTextColorSecondary"
-                tools:text="음식점" />
 
             <TextView
                 android:id="@+id/tv_place_address"
@@ -83,19 +72,31 @@
                 android:layout_toStartOf="@id/btn_close_card"
                 android:layout_marginEnd="8dp"
                 android:textSize="14sp"
-                android:textColor="?attr/myTextColorSecondary"
                 tools:text="가게 주소 예시, 서울특별시 중구 세종대로 110"/>
+
+            <TextView
+                android:id="@+id/tv_place_category"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_toStartOf="@id/btn_close_card"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="5dp"
+                android:layout_alignTop="@id/btn_close_card"
+                android:layout_alignBottom="@id/btn_close_card"
+                android:textSize="13sp"
+                android:textColor="?attr/myTextColorSecondary"
+                android:gravity="center_vertical"
+                tools:text="음식점" />
+
+            <Button
+                android:id="@+id/btn_select_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_place_address"
+                android:layout_marginTop="12dp"
+                android:text="이 위치로 가게 등록하기" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
-
-    <Button
-        android:id="@+id/btn_select_location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:text="이 위치로 선택"
-        android:enabled="false" />
 
 </RelativeLayout>

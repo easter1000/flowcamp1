@@ -1,5 +1,6 @@
 package com.example.myapp.ui.gallery;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,13 +8,13 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -28,17 +29,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.bumptech.glide.Glide;
-import com.example.myapp.ui.map.PlacePickerActivity;
 import com.example.myapp.R;
 import com.example.myapp.data.CuisineType;
 import com.example.myapp.data.Restaurant;
 import com.example.myapp.ui.DBRepository;
+import com.example.myapp.ui.map.PlacePickerActivity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -46,10 +48,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-
-import android.app.Activity;
-import android.util.Log;
-import androidx.activity.result.contract.ActivityResultContracts;
 
 public class AddRestaurantDialogFragment extends DialogFragment {
 
@@ -88,6 +86,18 @@ public class AddRestaurantDialogFragment extends DialogFragment {
         AddRestaurantDialogFragment fragment = new AddRestaurantDialogFragment();
         Bundle args = new Bundle();
         args.putLong(ARG_RESTAURANT_ID, restaurantId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static AddRestaurantDialogFragment newInstanceForCreateFromPlace(String name, String address, double lat, double lng, boolean shouldFocusOnName) {
+        AddRestaurantDialogFragment fragment = new AddRestaurantDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_RESTAURANT_NAME, name);
+        args.putString("address", address);
+        args.putDouble("lat", lat);
+        args.putDouble("lng", lng);
+        args.putBoolean("focus_on_name", shouldFocusOnName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -142,8 +152,28 @@ public class AddRestaurantDialogFragment extends DialogFragment {
             loadRestaurantDataForEdit();
         } else {
             btnSelect.setText("추가");
-            String restaurantName = getArguments().getString(ARG_RESTAURANT_NAME, "");
-            arName.setText(restaurantName);
+            Bundle args = getArguments();
+            if (args != null) {
+                if (args.getBoolean("focus_on_name", false)) {
+                    arName.requestFocus();
+                    arName.postDelayed(() -> {
+                        if(getActivity() != null) {
+                            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.showSoftInput(arName, InputMethodManager.SHOW_IMPLICIT);
+                        }
+                    }, 200);
+                } else {
+                    arName.setText(args.getString(ARG_RESTAURANT_NAME, ""));
+                }
+                if (args.containsKey("address")) {
+                    arLocation.setText(args.getString("address"));
+                    selectedLat = args.getDouble("lat");
+                    selectedLng = args.getDouble("lng");
+                    if (selectedLat != 0.0 && selectedLng != 0.0) {
+                        updateMapPreview(selectedLat, selectedLng);
+                    }
+                }
+            }
         }
 
         mapPreviewContainer.setOnClickListener(v -> startAutocompleteIntent());
@@ -152,14 +182,19 @@ public class AddRestaurantDialogFragment extends DialogFragment {
 
         arLocation.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
-                String addressString = arLocation.getText().toString().trim();
+                String addressString = Objects.requireNonNull(arLocation.getText()).toString().trim();
                 if (!addressString.isEmpty()) {
+                    // When focus is lost, reset selected coordinates as the text might have been manually edited.
+                    // The save action will geocode the new text.
+                    selectedLat = 0.0;
+                    selectedLng = 0.0;
                     geocodeAddressAndUpdateMap(addressString);
                 } else {
                     tilLocation.setError(null);
                 }
             }
         });
+
 
         btnSelect.setEnabled(checkFields());
 
@@ -239,7 +274,7 @@ public class AddRestaurantDialogFragment extends DialogFragment {
     private void updateExistingRestaurant() {
         if (currentRestaurant == null) return;
 
-        geocodeAddressAndUpdate(restaurant -> {
+        prepareRestaurantData(restaurant -> {
             repo.updateRestaurant(restaurant);
             Toast.makeText(getContext(), "“" + restaurant.name + "” 정보가 수정되었습니다.", Toast.LENGTH_SHORT).show();
             dismiss();
@@ -247,7 +282,7 @@ public class AddRestaurantDialogFragment extends DialogFragment {
     }
 
     private void createNewRestaurant() {
-        geocodeAddressAndUpdate(restaurant -> {
+        prepareRestaurantData(restaurant -> {
             repo.insertRestaurant(restaurant, id -> {
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
@@ -263,53 +298,67 @@ public class AddRestaurantDialogFragment extends DialogFragment {
         });
     }
 
-    private void geocodeAddressAndUpdate(RestaurantUpdateCallback callback) {
-        String restName = arName.getText().toString().trim();
-        String locName = arLocation.getText().toString().trim();
-        String dlocName = dLocation.getText().toString().trim();
+    private void prepareRestaurantData(RestaurantUpdateCallback callback) {
+        String restName = Objects.requireNonNull(arName.getText()).toString().trim();
+        String locName = Objects.requireNonNull(arLocation.getText()).toString().trim();
+        String dlocName = Objects.requireNonNull(dLocation.getText()).toString().trim();
 
-        Geocoder geocoder = new Geocoder(requireContext());
-        List<Address> addresses;
-        try {
-            addresses = geocoder.getFromLocationName(locName, 1);
-        } catch (IOException e) {
-            Log.e("AddRestaurantDialog", "주소 변환 오류", e);
-            Toast.makeText(getContext(), "주소 변환 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show();
+        // If we have precise coordinates from the map picker, use them.
+        if (selectedLat != 0.0 && selectedLng != 0.0) {
+            buildRestaurantAndCallback(restName, locName, dlocName, selectedLat, selectedLng, callback);
             return;
         }
 
-        if (addresses == null || addresses.isEmpty()) {
-            Toast.makeText(getContext(), "주소를 찾을 수 없습니다.", Toast.LENGTH_LONG).show();
-            return;
-        }
+        // Otherwise, geocode the address string provided by the user in a background thread.
+        new Thread(() -> {
+            Geocoder geocoder = new Geocoder(requireContext(), Locale.KOREAN);
+            try {
+                List<Address> addresses = geocoder.getFromLocationName(locName, 1);
+                if (getActivity() == null) return;
 
-        Address address = addresses.get(0);
-        double latitude = address.getLatitude();
-        double longitude = address.getLongitude();
+                getActivity().runOnUiThread(() -> {
+                    if (addresses != null && !addresses.isEmpty()) {
+                        Address address = addresses.get(0);
+                        buildRestaurantAndCallback(restName, locName, dlocName, address.getLatitude(), address.getLongitude(), callback);
+                    } else {
+                        Toast.makeText(getContext(), "주소를 찾을 수 없습니다. 지도에서 위치를 선택해주세요.", Toast.LENGTH_LONG).show();
+                        tilLocation.setError("유효한 주소를 찾을 수 없습니다.");
+                    }
+                });
+            } catch (IOException e) {
+                Log.e("AddRestaurantDialog", "주소 변환 오류", e);
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "주소 변환 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show());
+                }
+            }
+        }).start();
+    }
 
+    private void buildRestaurantAndCallback(String name, String location, String detailedLocation, double lat, double lng, RestaurantUpdateCallback callback) {
         int selectedPosition = spCuisineType.getSelectedItemPosition();
         CuisineType selectedType = CuisineType.values()[selectedPosition + 1];
 
-        Restaurant restaurantToUpdate;
+        Restaurant restaurant;
         if (currentRestaurant != null) {
-            restaurantToUpdate = currentRestaurant;
+            restaurant = currentRestaurant;
         } else {
-            restaurantToUpdate = new Restaurant();
+            restaurant = new Restaurant();
         }
 
-        restaurantToUpdate.name = restName;
-        restaurantToUpdate.location = locName;
-        restaurantToUpdate.detailedLocation = dlocName;
-        restaurantToUpdate.cuisineType = selectedType;
-        restaurantToUpdate.latitude = latitude;
-        restaurantToUpdate.longitude = longitude;
+        restaurant.name = name;
+        restaurant.location = location;
+        restaurant.detailedLocation = detailedLocation;
+        restaurant.cuisineType = selectedType;
+        restaurant.latitude = lat;
+        restaurant.longitude = lng;
 
         if (selectedImageUri != null) {
-            restaurantToUpdate.menuBoardUri = selectedImageUri;
+            restaurant.menuBoardUri = selectedImageUri;
         }
 
-        callback.onUpdate(restaurantToUpdate);
+        callback.onUpdate(restaurant);
     }
+
 
     interface RestaurantUpdateCallback {
         void onUpdate(Restaurant restaurant);
@@ -325,11 +374,11 @@ public class AddRestaurantDialogFragment extends DialogFragment {
 
                 if (addresses != null && !addresses.isEmpty()) {
                     Address location = addresses.get(0);
-                    selectedLat = location.getLatitude();
-                    selectedLng = location.getLongitude();
+                    // This update is for preview only. Don't set selectedLat/Lng here
+                    // as it might not be the user's final choice.
                     getActivity().runOnUiThread(() -> {
                         tilLocation.setError(null);
-                        updateMapPreview(selectedLat, selectedLng);
+                        updateMapPreview(location.getLatitude(), location.getLongitude());
                     });
                 } else {
                     getActivity().runOnUiThread(() -> {
@@ -415,18 +464,17 @@ public class AddRestaurantDialogFragment extends DialogFragment {
                         boolean isFromMapClick = data.getBooleanExtra("is_from_map_click", false);
 
                         arLocation.setText(address);
+                        tilLocation.setError(null);
                         updateMapPreview(selectedLat, selectedLng);
 
-                        if (isFromMapClick) {
+                        if (isFromMapClick || Objects.equals(name, "선택된 위치")) {
                             arName.requestFocus();
-
                             arName.postDelayed(() -> {
-                                InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                if (imm != null) {
+                                if(getActivity() != null) {
+                                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                                     imm.showSoftInput(arName, InputMethodManager.SHOW_IMPLICIT);
                                 }
-                            }, 100);
-
+                            }, 200);
                         } else {
                             if (name != null && !name.isEmpty()) {
                                 arName.setText(name);
@@ -434,7 +482,7 @@ public class AddRestaurantDialogFragment extends DialogFragment {
                         }
 
                     } else {
-                        Log.i("AddRestaurantActivity", "장소 선택이 취소되었습니다.");
+                        Log.i("AddRestaurantDialog", "장소 선택이 취소되었습니다.");
                     }
                 });
     }
@@ -449,24 +497,21 @@ public class AddRestaurantDialogFragment extends DialogFragment {
     }
 
     private boolean checkFields() {
-        boolean isNameEmpty = arName.getText().toString().trim().isEmpty();
-        boolean isLocationEmpty = arLocation.getText().toString().trim().isEmpty();
-        boolean isNameShort = arName.getText().toString().trim().length() < MAX_AR_NAME_LENGTH;
-        boolean isLocationShort = arLocation.getText().toString().trim().length() < MAX_AR_LOCATION_LENGTH;
+        boolean isNameEmpty = Objects.requireNonNull(arName.getText()).toString().trim().isEmpty();
+        boolean isLocationEmpty = Objects.requireNonNull(arLocation.getText()).toString().trim().isEmpty();
+        boolean isNameShort = arName.getText().toString().trim().length() <= MAX_AR_NAME_LENGTH;
+        boolean isLocationShort = arLocation.getText().toString().trim().length() <= MAX_AR_LOCATION_LENGTH;
         return !isNameEmpty && !isLocationEmpty && isNameShort && isLocationShort;
     }
 
     private void addValidationListener(EditText editText, TextInputLayout textInputLayout, int maxLength, String errorMsg) {
         editText.addTextChangedListener(new TextWatcher() {
-            private boolean selfChange = false;
-
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (selfChange) return;
-
                 if (s.length() > maxLength) {
                     textInputLayout.setError(errorMsg);
                 } else {
@@ -476,14 +521,6 @@ public class AddRestaurantDialogFragment extends DialogFragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (selfChange) return;
-
-                if (s.length() > maxLength) {
-                    selfChange = true;
-                    s.delete(maxLength, s.length());
-                    selfChange = false;
-                }
-
                 if (btnSelect != null) {
                     btnSelect.setEnabled(checkFields());
                 }
