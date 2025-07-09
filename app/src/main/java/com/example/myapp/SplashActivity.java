@@ -122,7 +122,27 @@ public class SplashActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("거부", (dialog, which) -> {
                     Toast.makeText(this, "권한이 거부되어 지도 기능을 사용할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                    showPermissionGuidanceDialog();
+                })
+                .setCancelable(false)
+                .create()
+                .show();
+    }
+
+    private void showPermissionGuidanceDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("권한 설정 안내")
+                .setMessage("위치 기능 사용을 위해 '앱 설정'에서 위치 권한을 항상 허용해주세요.")
+                .setPositiveButton("설정으로 이동", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivity(intent);
                     finishInitialization();
+                })
+                .setNegativeButton("취소", (dialog, which) -> {
+                    Toast.makeText(this, "권한이 없어 앱을 종료합니다.", Toast.LENGTH_SHORT).show();
+                    finish();
                 })
                 .setCancelable(false)
                 .create()
