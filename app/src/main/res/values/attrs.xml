@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="myTextColorPrimary" format="color" />
+    <attr name="myTextColorSecondary" format="color" />
+    <attr name="iconColor" format="color" />
+    <attr name="dividerColor" format="color" />"
+</resources>

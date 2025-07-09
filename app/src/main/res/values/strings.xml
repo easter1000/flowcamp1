@@ -1,6 +1,8 @@
 <resources>
-    <string name="app_name">My app</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="app_name">matka</string>
+    <string name="title_home">맛집</string>
+    <string name="dot_separator">∙</string>
+    <string name="title_dashboard">메뉴</string>
+    <string name="title_notifications">지도</string>
+    <string name="map_id">4214aa9a000c3c031fcc16e3</string>
 </resources>
